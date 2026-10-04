@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>地球的历史 · 46亿年时间旅行 | 第一章 宇宙中的地球</title>
+<style>
+  :root{
+    --bg0:#060912; --bg1:#0b1220;
+    --card:rgba(255,255,255,.045); --card2:rgba(255,255,255,.075);
+    --line:rgba(255,255,255,.10); --line2:rgba(255,255,255,.20);
+    --txt:#e9eefb; --txt2:#9aa7c2; --txt3:#6b7997;
+    --gold:#ffcf5c; --orange:#ff8a3d; --red:#ff5a6a; --blue:#4cc9f0; --green:#4ade80; --violet:#a78bfa;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+    background:radial-gradient(1100px 760px at 12% -8%, #141f3a 0%, transparent 55%),
+               radial-gradient(1000px 720px at 100% 0%, #2a1830 0%, transparent 52%),
+               var(--bg0);
+    color:var(--txt); line-height:1.55; min-height:100%; padding:22px 18px 60px; -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1180px;margin:0 auto}
+  header.hd{display:flex;flex-wrap:wrap;align-items:flex-end;gap:14px;justify-content:space-between;margin-bottom:20px}
+  .hd-l h1{font-size:clamp(21px,3vw,30px);letter-spacing:.5px;font-weight:800}
+  .hd-l h1 .accent{background:linear-gradient(92deg,#7ee0a0,#4cc9f0);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .hd-l p{color:var(--txt2);font-size:13.5px;margin-top:6px}
+  .hd-r{display:flex;gap:8px;flex-wrap:wrap}
+  .tag{font-size:12px;padding:5px 11px;border-radius:999px;border:1px solid var(--line2);color:var(--txt2);background:rgba(255,255,255,.03);white-space:nowrap}
+  .tag.hot{border-color:rgba(126,224,160,.5);color:#8fe8b0;background:rgba(126,224,160,.10)}
+  /* ---------- 时间轴 ---------- */
+  .timepanel{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px 16px 12px;position:relative;overflow:hidden}
+  .nowbar{display:flex;flex-wrap:wrap;align-items:baseline;gap:12px;margin-bottom:14px}
+  .nowbar .clock{font-size:clamp(22px,3.4vw,32px);font-weight:850;font-variant-numeric:tabular-nums;letter-spacing:.4px;
+    background:linear-gradient(92deg,#ffe08a,#ff8a3d);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .nowbar .era-pill{font-size:13px;padding:5px 13px;border-radius:999px;font-weight:700;color:#0a0e18;background:#ffcf5c}
+  .nowbar .sub{font-size:12.5px;color:var(--txt3);margin-left:auto}
+  .axisbox{position:relative;margin:2px 0 4px}
+  .track{position:relative;height:46px;border-radius:10px;overflow:hidden;display:flex;background:#0c1424;border:1px solid var(--line)}
+  .seg{position:relative;height:100%;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.15s;overflow:hidden}
+  .seg .lbl{font-size:10.5px;font-weight:700;color:rgba(10,14,24,.92);white-space:nowrap;text-shadow:0 1px 0 rgba(255,255,255,.25);pointer-events:none}
+  .seg:hover{filter:brightness(1.22)}
+  .seg.dim{filter:grayscale(.55) brightness(.62)}
+  .needle{position:absolute;top:-9px;bottom:-9px;width:2px;background:#fff;box-shadow:0 0 12px 3px rgba(255,255,255,.75);pointer-events:none;z-index:6;transition:left .08s linear}
+  .needle::before{content:"";position:absolute;top:-3px;left:-5px;width:12px;height:12px;border-radius:50%;background:#fff;box-shadow:0 0 10px 2px rgba(255,255,255,.9)}
+  .needle .ntip{position:absolute;top:-30px;left:50%;transform:translateX(-50%);font-size:11px;font-weight:700;color:#0a0e18;background:#fff;padding:2px 8px;border-radius:6px;white-space:nowrap;box-shadow:0 3px 12px rgba(0,0,0,.5)}
+  .marks{position:absolute;left:0;right:0;top:46px;height:26px}
+  .mark{position:absolute;transform:translateX(-50%);cursor:pointer;font-size:10px;color:var(--txt3);display:flex;flex-direction:column;align-items:center;gap:0}
+  .mark .p{width:7px;height:7px;border-radius:50%;background:var(--red);box-shadow:0 0 8px rgba(255,90,106,.8);margin-top:2px}
+  .mark:hover{color:#fff} .mark.on{color:#fff} .mark.on .p{background:#fff;box-shadow:0 0 10px #fff}
+  .ticks{position:absolute;left:0;right:0;top:76px;height:14px;font-size:10px;color:var(--txt3)}
+  .ticks span{position:absolute;transform:translateX(-50%)}
+  /* 控制 */
+  .playctl{display:flex;flex-wrap:wrap;gap:9px;align-items:center;margin-top:26px}
+  .btn{font-family:inherit;font-size:13px;padding:8px 15px;border-radius:10px;border:1px solid var(--line2);
+    background:rgba(255,255,255,.04);color:var(--txt);cursor:pointer;transition:.15s;display:inline-flex;align-items:center;gap:7px}
+  .btn:hover{border-color:var(--gold);color:var(--gold)}
+  .btn.primary{background:linear-gradient(180deg,rgba(255,207,92,.25),rgba(255,138,61,.16));border-color:var(--gold);color:#ffe6a8;font-weight:700}
+  .spd{margin-left:auto;display:flex;gap:6px;align-items:center;font-size:12px;color:var(--txt3)}
+  .spd button{font-family:inherit;font-size:12px;padding:5px 10px;border-radius:8px;border:1px solid var(--line);background:rgba(255,255,255,.03);color:var(--txt2);cursor:pointer}
+  .spd button.on{border-color:var(--gold);color:var(--gold);background:rgba(255,207,92,.1)}
+  /* ---------- 主区 ---------- */
+  .main2{display:grid;grid-template-columns:minmax(300px,1fr) minmax(300px,1.05fr);gap:16px;margin-top:16px}
+  @media(max-width:860px){.main2{grid-template-columns:1fr}}
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px;position:relative;overflow:hidden}
+  .panel .ttl{font-size:12.5px;letter-spacing:1.5px;color:var(--txt3);text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:7px}
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--blue);box-shadow:0 0 10px var(--blue)}
+  canvas{display:block;width:100%}
+  #globeCv{height:clamp(280px,40vw,380px)}
+  .infocard{padding:4px 2px}
+  .infocard h2{font-size:20px;display:flex;align-items:baseline;gap:9px;flex-wrap:wrap}
+  .infocard h2 .en{font-size:12px;color:var(--txt3);font-weight:500}
+  .infocard .range{font-size:12.5px;color:var(--gold);margin:5px 0 12px;font-variant-numeric:tabular-nums}
+  .kv{display:flex;flex-direction:column;gap:11px}
+  .kv .row{display:flex;gap:11px;align-items:flex-start}
+  .kv .row .ic{width:26px;height:26px;border-radius:8px;display:grid;place-items:center;font-size:14px;background:rgba(255,255,255,.06);flex:0 0 auto}
+  .kv .row .tx{font-size:13px;color:var(--txt2);line-height:1.6}
+  .kv .row .tx b{color:var(--txt)}
+  /* ---------- 生物 ---------- */
+  .life{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  @media(max-width:860px){.life{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:420px){.life{grid-template-columns:1fr}}
+  .lcard{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;transition:.2s;opacity:.42;filter:grayscale(.5)}
+  .lcard.act{opacity:1;filter:none;border-color:var(--line2);background:var(--card2);transform:translateY(-2px);box-shadow:0 10px 34px -16px rgba(126,224,160,.6)}
+  .lcard .emo{font-size:30px;line-height:1}
+  .lcard h3{font-size:14.5px;margin:8px 0 4px}
+  .lcard .t{font-size:11px;color:var(--gold);font-variant-numeric:tabular-nums}
+  .lcard p{font-size:12.2px;color:var(--txt2);margin-top:7px;line-height:1.6}
+  /* ---------- 事件 ---------- */
+  .events{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  @media(max-width:860px){.events{grid-template-columns:1fr}}
+  .ecard{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;cursor:pointer;transition:.18s;position:relative;overflow:hidden}
+  .ecard:hover{background:var(--card2);transform:translateY(-2px)}
+  .ecard::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--red)}
+  .ecard.warm::before{background:var(--orange)} .ecard.cool::before{background:var(--blue)} .ecard.good::before{background:var(--green)}
+  .ecard .h{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+  .ecard h3{font-size:14.5px}
+  .ecard .t{font-size:11px;color:var(--gold);white-space:nowrap;font-variant-numeric:tabular-nums}
+  .ecard p{font-size:12.3px;color:var(--txt2);margin-top:7px;line-height:1.6}
+  /* ---------- 通用 ---------- */
+  .sec-h{display:flex;align-items:center;gap:10px;margin:26px 0 12px;font-size:14px;letter-spacing:1.2px;color:var(--txt2);text-transform:uppercase}
+  .sec-h::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,var(--line2),transparent)}
+  .notes{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:860px){.notes{grid-template-columns:1fr}}
+  .note{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px}
+  .note h4{font-size:14px;margin-bottom:11px;display:flex;align-items:center;gap:8px}
+  .note h4 .ic{width:20px;height:20px;border-radius:6px;display:grid;place-items:center;font-size:12px;background:rgba(76,201,240,.16);color:var(--blue)}
+  .note ul{list-style:none;display:flex;flex-direction:column;gap:9px}
+  .note li{font-size:13px;color:var(--txt2);padding-left:19px;position:relative;line-height:1.62}
+  .note li::before{content:"";position:absolute;left:3px;top:8px;width:6px;height:6px;border-radius:2px;background:var(--gold);transform:rotate(45deg)}
+  .note li b{color:var(--txt)}
+  .warn h4 .ic{background:rgba(255,90,106,.16);color:var(--red)}
+  .warn li::before{background:var(--red)}
+  /* 地层图 */
+  .strata{display:flex;flex-direction:column;border-radius:12px;overflow:hidden;border:1px solid var(--line2);margin-top:4px}
+  .srow{display:flex;align-items:center;gap:10px;padding:9px 12px;font-size:12.5px;position:relative}
+  .srow .nm{font-weight:700;color:#0a0e18;min-width:86px}
+  .srow .fo{color:rgba(10,14,24,.78);font-size:11.5px}
+  .srow .sph{margin-left:auto;font-size:11px;color:rgba(10,14,24,.75)}
+  .arrowup{text-align:center;font-size:11px;color:var(--txt3);margin:6px 0 2px}
+  footer.ft{margin-top:34px;padding-top:16px;border-top:1px solid var(--line);display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;color:var(--txt3);font-size:12px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hd">
+    <div class="hd-l">
+      <h1>地球的<span class="accent">历史</span> · 46亿年时间旅行</h1>
+      <p>拖动时间指针（或按下播放），看这颗星球如何从熔岩火球，一步步孕育出今天的蓝色家园</p>
+    </div>
+    <div class="hd-r">
+      <span class="tag hot">第一章 宇宙中的地球</span>
+      <span class="tag">高一地理 · 必修一</span>
+      <span class="tag">人教版（2019）</span>
+    </div>
+  </header>
+
+  <!-- 时间轴 -->
+  <section class="timepanel">
+    <div class="nowbar">
+      <span class="clock" id="clock">46亿年前</span>
+      <span class="era-pill" id="eraPill">冥古宙</span>
+      <span class="sub" id="subInfo">地球刚刚诞生，还是一颗炽热的熔岩球</span>
+    </div>
+    <div class="axisbox" id="axisbox">
+      <div class="track" id="track"></div>
+      <div class="marks" id="marks"></div>
+      <div class="ticks" id="ticks"></div>
+      <div class="needle" id="needle" style="left:0"><span class="ntip" id="ntip">46亿年前</span></div>
+    </div>
+    <div class="playctl">
+      <button class="btn primary" id="playBtn">▶ 播放46亿年</button>
+      <button class="btn" id="resetBtn">⟲ 回到起点</button>
+      <button class="btn" id="endBtn">⤓ 跳到现代</button>
+      <div class="spd" id="spdBox">
+        <span>速度</span>
+        <button data-s="0.5">慢</button>
+        <button data-s="1" class="on">中</button>
+        <button data-s="2.5">快</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 地球面貌 + 信息 -->
+  <div class="main2">
+    <section class="panel">
+      <div class="ttl"><span class="dot"></span>当时的<b style="color:var(--txt2);margin-left:-2px">地球面貌</b></div>
+      <canvas id="globeCv"></canvas>
+    </section>
+    <section class="panel">
+      <div class="ttl"><span class="dot" style="background:var(--gold);box-shadow:0 0 10px var(--gold)"></span>时代档案</div>
+      <div class="infocard" id="infocard"></div>
+    </section>
+  </div>
+
+  <!-- 生物演化 -->
+  <div class="sec-h">生物演化 · 谁在主宰这颗星球</div>
+  <div class="life" id="life"></div>
+
+  <!-- 重大事件 -->
+  <div class="sec-h">重大事件 · 点击跳转</div>
+  <div class="events" id="events"></div>
+
+  <!-- 地层与化石 -->
+  <div class="sec-h">判读地球历史的两把钥匙</div>
+  <div class="notes">
+    <div class="note">
+      <h4><span class="ic">📚</span>地层与化石</h4>
+      <p style="font-size:12.6px;color:var(--txt2);margin-bottom:10px">沉积岩层就像一本“石头书”，一层层记录着地球的往事。<b style="color:var(--txt)">下老上新</b>、<b style="color:var(--txt)">越古老的地层含有越低级、越简单的化石</b>。</p>
+      <div class="arrowup">▲ 越靠上 → 地层越新 → 化石越高级</div>
+      <div class="strata" id="strata"></div>
+      <ul style="margin-top:11px">
+        <li><b>地层：</b>具有时间顺序的层状岩石，是研究地球历史的主要途径。</li>
+        <li><b>化石：</b>保存在地层中的古生物遗体、遗骸，可指示古地理环境。</li>
+      </ul>
+    </div>
+    <div class="note warn">
+      <h4><span class="ic">!</span>核心结论与易错点</h4>
+      <ul>
+        <li><b>生物演化：</b>由简单到复杂、由低级到高级、由水生到陆生。</li>
+        <li><b>成煤期：</b>古生代（蕨类植物）和中生代（裸子植物）是两大重要成煤期。</li>
+        <li><b>大氧化事件（约24亿年前）：</b>蓝藻光合作用使大气中氧气增加，为生命登陆创造条件。</li>
+        <li><b>五次生物大灭绝：</b>其中<b>二叠纪末</b>（约2.52亿年前）规模最大，白垩纪末恐龙灭绝。</li>
+        <li>易错：<b>人类出现在第四纪</b>，属于新生代，而不是中生代。</li>
+      </ul>
+    </div>
+  </div>
+
+  <footer class="ft">
+    <span>AI 创意笔记 · 可交互展示网页 | 地理必修一 · 第一章 宇宙中的地球 · 第三节 地球的历史</span>
+    <span>人大附中 · 高一(12)班 · 40号 · 余昊洋</span>
+  </footer>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  /* ============ 地质年代表数据（单位：百万年前 Ma） ============ */
+  var ERAS = [
+    {key:"hadean",   name:"冥古宙", eon:"前寒武纪", from:4600, to:4000, color:"#7c2b22",
+      env:"地球刚形成，表面为炽热熔岩，火山遍地、陨石频繁撞击，几乎无液态水",
+      life:"尚无生命", note:"地球诞生于约46亿年前"},
+    {key:"archean",  name:"太古宙", eon:"前寒武纪", from:4000, to:2500, color:"#a1492c",
+      env:"火山活动减弱，原始海洋形成，大气以二氧化碳、甲烷、氮气为主，没有氧气",
+      life:"原始生命（如蓝藻）出现，进行光合作用，大气开始积聚氧气", note:"生命起源"},
+    {key:"protero",  name:"元古宙", eon:"前寒武纪", from:2500, to:541, color:"#c2703a",
+      env:"约24亿年前发生“大氧化事件”，大气含氧量增加；末期出现全球性冰期（雪球地球）",
+      life:"真核生物、多细胞生物出现，藻类繁盛", note:"大氧化事件 · 雪球地球"},
+    {key:"cambrian", name:"寒武纪", eon:"古生代", from:541, to:485, color:"#4f8f6a",
+      env:"海洋广阔，气候温湿", life:"海洋无脊椎动物大爆发（三叶虫、笔石等）", note:"寒武纪生命大爆发"},
+    {key:"ordovic",  name:"奥陶纪", eon:"古生代", from:485, to:444, color:"#579d7e",
+      env:"海洋仍占主导，气候分异明显", life:"三叶虫、笔石、珊瑚、腕足类繁盛，出现最早鱼类", note:"奥陶纪末生物大灭绝"},
+    {key:"silurian", name:"志留纪", eon:"古生代", from:444, to:419, color:"#5fa07a",
+      env:"海洋退缩，陆地面积扩大", life:"珊瑚、腕足类繁盛；植物开始登陆", note:"——"},
+    {key:"devonian", name:"泥盆纪", eon:"古生代", from:419, to:359, color:"#6aa86f",
+      env:"气候温暖，海陆交互", life:"鱼类（含两栖类的祖先）繁盛，蕨类植物繁盛", note:"泥盆纪末生物大灭绝（“鱼类时代”终结）"},
+    {key:"carbonif", name:"石炭纪", eon:"古生代", from:359, to:299, color:"#7bb166",
+      env:"气候湿热，沼泽遍布", life:"高大蕨类森林繁盛，两栖类繁盛", note:"重要成煤期（蕨类）"},
+    {key:"permian",  name:"二叠纪", eon:"古生代", from:299, to:252, color:"#8ab25e",
+      env:"陆地面积进一步扩大，气候变干", life:"爬行动物出现，裸子植物逐渐繁盛", note:"二叠纪末最大灭绝（约96%海洋物种消失）"},
+    {key:"triassic", name:"三叠纪", eon:"中生代", from:252, to:201, color:"#c9b04f",
+      env:"泛大陆开始解体，气候干热", life:"爬行动物（恐龙）出现并逐渐繁盛", note:"三叠纪末生物大灭绝"},
+    {key:"jurassic", name:"侏罗纪", eon:"中生代", from:201, to:145, color:"#cdbc4a",
+      env:"气候湿热，植被茂密", life:"恐龙繁盛，裸子植物（苏铁、银杏）繁盛，鸟类（始祖鸟）出现", note:"重要成煤期（裸子植物）"},
+    {key:"cretace",  name:"白垩纪", eon:"中生代", from:145, to:66, color:"#d6c44e",
+      env:"气候较温暖，海洋再次扩张", life:"恐龙达鼎盛，被子植物出现并兴起", note:"白垩纪末大灭绝（恐龙灭绝）"},
+    {key:"paleogen", name:"古近纪", eon:"新生代", from:66, to:23, color:"#e0a34a",
+      env:"气候逐渐变冷，现代海陆格局初现", life:"哺乳动物与鸟类迅速繁盛，被子植物占据优势", note:"哺乳动物的“黄金时代”启幕"},
+    {key:"neogen",   name:"新近纪", eon:"新生代", from:23, to:2.58, color:"#e8b04b",
+      env:"气候变化剧烈，草原大面积扩展", life:"哺乳动物高度繁盛，灵长类中出现人类的近祖", note:"——"},
+    {key:"quater",   name:"第四纪", eon:"新生代", from:2.58, to:0, color:"#f0c25a",
+      env:"气候冷暖交替，出现多次冰期与间冰期", life:"人类出现并发展，是现代人类诞生的时期", note:"人类时代"}
+  ];
+
+  var EVENTS = [
+    {age:4600, label:"地球诞生", cls:"", desc:"地球形成，处于熔岩状态，频繁遭受陨石撞击", era:"冥古宙"},
+    {age:3800, label:"生命起源", cls:"good", desc:"原始海洋中出现了最早的原始生命（如蓝藻）", era:"太古宙"},
+    {age:2400, label:"大氧化事件", cls:"good", desc:"蓝藻光合作用使大气含氧量大幅增加，为生物登陆创造条件", era:"元古宙"},
+    {age:720,  label:"雪球地球", cls:"cool", desc:"新元古代出现全球性冰期，地球一度被冰雪覆盖", era:"元古宙"},
+    {age:541,  label:"生命大爆发", cls:"good", desc:"寒武纪生命大爆发，海洋无脊椎动物突然繁盛", era:"寒武纪"},
+    {age:444.3,label:"奥陶纪灭绝", cls:"warm", desc:"约85%物种灭绝，是五次大灭绝之一", era:"奥陶纪"},
+    {age:359.3,label:"泥盆纪灭绝", cls:"warm", desc:"海洋生物遭受重创，珊瑚、腕足类大量消失", era:"泥盆纪"},
+    {age:252.3,label:"二叠纪大灭绝", cls:"", desc:"地球历史上最严重的灭绝事件，约96%海洋物种消失", era:"二叠纪"},
+    {age:66.3, label:"恐龙灭绝", cls:"warm", desc:"白垩纪末大灭绝，恐龙等约75%物种消失，为哺乳动物兴起让路", era:"白垩纪"},
+    {age:0.117,label:"人类出现", cls:"good", desc:"约1万多年前，人类进入文明时代", era:"第四纪"}
+  ];
+
+  var LIFE = [
+    {id:"micro", emo:"🦠", name:"单细胞生命", from:4000, to:2500, cls:"太古宙", desc:"最早的生命形态：原始细菌与蓝藻，生活在海洋中。"},
+    {id:"algae", emo:"🧫", name:"藻类 · 多细胞生物", from:2500, to:541, cls:"元古宙", desc:"真核生物、多细胞生物出现，藻类繁盛，海洋“绿”了起来。"},
+    {id:"tri",   emo:"🐚", name:"三叶虫 · 无脊椎动物", from:541, to:359, cls:"古生代", desc:"寒武纪大爆发后，海洋无脊椎动物成为主角。"},
+    {id:"fish",  emo:"🐟", name:"鱼类 · 两栖类 · 蕨类", from:419, to:252, cls:"古生代", desc:"鱼类繁盛并演化出两栖类，蕨类森林繁盛（成煤）。"},
+    {id:"dino",  emo:"🦕", name:"恐龙 · 裸子植物", from:252, to:66, cls:"中生代", desc:"爬行动物鼎盛，恐龙支配陆地、海洋与天空。"},
+    {id:"mammal",emo:"🦣", name:"哺乳动物 · 被子植物", from:66, to:2.58, cls:"新生代", desc:"恐龙灭绝后，哺乳动物与鸟类迅速占据生态位。"},
+    {id:"human", emo:"🧍", name:"人类", from:2.58, to:0, cls:"新生代", desc:"第四纪人类出现，学会使用工具、火，并走向文明。"}
+  ];
+
+  /* ============ 时间坐标映射（分段拉伸） ============ */
+  function xOfAge(ma){ // ma: 4600..0 -> 0..1
+    if(ma>=541){ var t=(4600-ma)/(4600-541); return t*0.32; }
+    var t=(541-ma)/541; return 0.32 + t*0.68;
+  }
+  function ageOfX(u){
+    if(u<=0.32){ return 4600 - (u/0.32)*(4600-541); }
+    return 541 - ((u-0.32)/0.68)*541;
+  }
+  function fmtNum(x){
+    if(x>=100) return Math.round(x).toString();
+    if(x>=10) return x.toFixed(1).replace(/\.0$/,"");
+    if(x>=1) return x.toFixed(2).replace(/\.?0+$/,"");
+    return x.toFixed(3).replace(/\.?0+$/,"");
+  }
+  function fmtAge(ma){
+    if(ma<=0.01) return "现在";
+    if(ma>=100) return fmtNum(ma/100)+" 亿年前";
+    return fmtNum(ma*100)+" 万年前";
+  }
+  function eraAt(ma){
+    // 从新到老匹配，避免相邻时代边界（如541Ma）被更早的时代抢占
+    for(var i=ERAS.length-1;i>=0;i--){ if(ma<=ERAS[i].from && ma>=ERAS[i].to) return ERAS[i]; }
+    return ERAS[0];
+  }
+
+  /* ============ 状态 ============ */
+  var state = { age:4600, playing:false, speed:1 };
+
+  /* ============ DOM ============ */
+  var track=document.getElementById("track"), marksBox=document.getElementById("marks"),
+      ticksBox=document.getElementById("ticks"), needle=document.getElementById("needle"),
+      ntip=document.getElementById("ntip"), clock=document.getElementById("clock"),
+      eraPill=document.getElementById("eraPill"), subInfo=document.getElementById("subInfo"),
+      infoBox=document.getElementById("infocard"), lifeBox=document.getElementById("life"),
+      eventsBox=document.getElementById("events"), strataBox=document.getElementById("strata"),
+      axisbox=document.getElementById("axisbox");
+
+  /* ---------- 渲染：色带 ---------- */
+  function renderTrack(){
+    track.innerHTML="";
+    ERAS.forEach(function(E){
+      var left=xOfAge(E.from)*100, right=xOfAge(E.to)*100;
+      var w=right-left;
+      var d=document.createElement("div");
+      d.className="seg"; d.dataset.key=E.key;
+      d.style.left=left+"%"; d.style.width=w+"%"; d.style.background=E.color;
+      d.title=E.name+" · "+fmtAge(E.from)+" ~ "+(E.to<=0?"现在":fmtAge(E.to));
+      if(w>=5.5){ var s=document.createElement("span"); s.className="lbl"; s.textContent=E.name; d.appendChild(s); }
+      d.addEventListener("click",function(){ goTo(E.from); });
+      track.appendChild(d);
+    });
+    // 刻度
+    ticksBox.innerHTML="";
+    [[4600,"46亿年"],[541,"5.41亿年"],[252,"2.52亿年"],[66,"0.66亿年"],[0,"现在"]].forEach(function(t){
+      var s=document.createElement("span"); s.style.left=(xOfAge(t[0])*100)+"%"; s.textContent=t[1]; ticksBox.appendChild(s);
+    });
+    // 事件标记
+    marksBox.innerHTML="";
+    EVENTS.forEach(function(E,i){
+      var m=document.createElement("div"); m.className="mark"; m.dataset.i=i;
+      m.style.left=(xOfAge(E.age)*100)+"%";
+      m.title=E.label+" · "+fmtAge(E.age);
+      m.innerHTML='<div class="p"></div>';
+      m.addEventListener("click",function(){ goTo(E.age); });
+      marksBox.appendChild(m);
+    });
+  }
+
+  /* ---------- 渲染：时代档案 ---------- */
+  function renderInfo(){
+    var E=eraAt(state.age);
+    infoBox.innerHTML=
+      '<h2>'+E.name+' <span class="en">'+E.eon+'</span></h2>'+
+      '<div class="range">'+fmtAge(E.from)+' ~ '+(E.to<=0?"现在":fmtAge(E.to))+'　·　距今约 '+fmtAge(E.to)+'</div>'+
+      '<div class="kv">'+
+        row("🌍","古地理环境", E.env)+
+        row("🧬","代表性生物", E.life)+
+        row("⭐","关键事件", E.note)+
+      '</div>';
+    // 高亮色带
+    var segs=track.querySelectorAll(".seg");
+    for(var i=0;i<segs.length;i++){
+      segs[i].classList.toggle("dim", segs[i].dataset.key!==E.key);
+    }
+    // 事件标记高亮
+    var ms=marksBox.querySelectorAll(".mark");
+    for(var j=0;j<ms.length;j++){
+      var ev=EVENTS[+ms[j].dataset.i];
+      ms[j].classList.toggle("on", Math.abs(ev.age-state.age)< (ev.age>1000?120:8));
+    }
+  }
+  function row(ic,k,v){ return '<div class="row"><div class="ic">'+ic+'</div><div class="tx"><b>'+k+'：</b>'+v+'</div></div>'; }
+
+  /* ---------- 渲染：生物 ---------- */
+  function renderLife(){
+    lifeBox.innerHTML="";
+    LIFE.forEach(function(L){
+      var on = state.age<=L.from && state.age>=L.to;
+      var d=document.createElement("div");
+      d.className="lcard"+(on?" act":"");
+      d.innerHTML='<div class="emo">'+L.emo+'</div>'+
+        '<h3>'+L.name+'</h3><div class="t">'+L.cls+'　'+fmtAge(L.from)+'~'+(L.to<=0?"现在":fmtAge(L.to))+'</div>'+
+        '<p>'+L.desc+'</p>';
+      d.addEventListener("click",function(){ goTo((L.from+L.to)/2); });
+      lifeBox.appendChild(d);
+    });
+  }
+
+  /* ---------- 渲染：事件卡 ---------- */
+  function renderEvents(){
+    eventsBox.innerHTML="";
+    EVENTS.forEach(function(E,i){
+      var d=document.createElement("div");
+      d.className="ecard "+(E.cls||"");
+      d.innerHTML='<div class="h"><h3>'+E.label+'</h3><span class="t">'+fmtAge(E.age)+'</span></div>'+
+        '<p>'+E.desc+'</p>';
+      d.addEventListener("click",function(){ goTo(E.age); markEventPulse(i); });
+      eventsBox.appendChild(d);
+    });
+  }
+  function markEventPulse(i){
+    var m=marksBox.querySelector('.mark[data-i="'+i+'"]');
+    if(m){ m.classList.add("on"); m.style.transition="transform .2s"; m.style.transform="translateX(-50%) scale(1.8)";
+      setTimeout(function(){ m.style.transform=""; },220); }
+  }
+
+  /* ---------- 渲染：地层 ---------- */
+  function renderStrata(){
+    // 从上到下 = 由新到老
+    var rows=[
+      {nm:"新生代", fo:"第四纪", sp:"人类、哺乳动物", c:"#f0c25a"},
+      {nm:"中生代", fo:"白垩纪", sp:"恐龙、被子植物", c:"#d6c44e"},
+      {nm:"古生代", fo:"石炭纪", sp:"蕨类森林、两栖类", c:"#7bb166"},
+      {nm:"元古宙", fo:"——", sp:"藻类、多细胞生物", c:"#c2703a"},
+      {nm:"太古宙", fo:"——", sp:"蓝藻等原始生命", c:"#a1492c"}
+    ];
+    strataBox.innerHTML="";
+    rows.forEach(function(r){
+      var d=document.createElement("div"); d.className="srow"; d.style.background=r.c;
+      d.innerHTML='<span class="nm">'+r.nm+'</span><span class="fo">'+r.fo+'</span><span class="sph">化石：'+r.sp+'</span>';
+      strataBox.appendChild(d);
+    });
+    var down=document.createElement("div"); down.className="arrowup"; down.style.marginTop="4px";
+    down.textContent="▼ 越靠下 → 地层越老 → 化石越低级、越简单"; strataBox.appendChild(down);
+  }
+
+  /* ============ 地球面貌 Canvas ============ */
+  var gcv=document.getElementById("globeCv"), gctx=gcv.getContext("2d");
+  var GW=0,GH=0,DPR=1,GX=0,GY=0,GR=0,rot=0;
+  var blobs=[];
+  (function(){ for(var i=0;i<16;i++){ blobs.push({lat:(Math.random()-0.5)*2.4, lon:Math.random()*6.28, s:0.10+Math.random()*0.24, dark:Math.random()>0.45}); } })();
+  var COLORS=[[4600,"#8c1b0f"],[4000,"#7a2a1a"],[3200,"#3d3c6e"],[2400,"#1e6ea0"],[1000,"#2a8fbf"],[720,"#dbe7f5"],[640,"#2a8fbf"],[541,"#2f83b8"],[300,"#3f9a6b"],[66,"#4aa86a"],[2.58,"#3f9a6e"],[0,"#2e8fbf"]];
+  function lerpColor(a,b,t){
+    function hex(c){return [parseInt(c.slice(1,3),16),parseInt(c.slice(3,5),16),parseInt(c.slice(5,7),16)];}
+    var A=hex(a),B=hex(b);
+    return "rgb("+Math.round(A[0]+(B[0]-A[0])*t)+","+Math.round(A[1]+(B[1]-A[1])*t)+","+Math.round(A[2]+(B[2]-A[2])*t)+")";
+  }
+  function colorAt(ma){
+    if(ma>=COLORS[0][0]) return COLORS[0][1];
+    for(var i=0;i<COLORS.length-1;i++){
+      var a=COLORS[i], b=COLORS[i+1];
+      if(ma<=a[0] && ma>=b[0]){ var t=(a[0]-ma)/((a[0]-b[0])||1); return lerpColor(a[1],b[1],t); }
+    }
+    return COLORS[COLORS.length-1][1];
+  }
+  function resizeGlobe(){
+    var r=gcv.getBoundingClientRect(); DPR=Math.min(window.devicePixelRatio||1,2);
+    GW=r.width; GH=r.height;
+    gcv.width=Math.max(1,GW*DPR); gcv.height=Math.max(1,GH*DPR);
+    gctx.setTransform(DPR,0,0,DPR,0,0);
+    GX=GW/2; GY=GH/2; GR=Math.min(GW,GH)*0.33;
+    drawGlobe();
+  }
+  function drawGlobe(){
+    gctx.clearRect(0,0,GW,GH);
+    var ma=state.age;
+    // 星空
+    var t=Date.now()/1500;
+    for(var i=0;i<46;i++){
+      gctx.globalAlpha=0.25+0.5*Math.abs(Math.sin(t+i*1.7));
+      gctx.fillStyle="#cfe0ff";
+      var sx=(i*97%GW), sy=((i*53)%GH);
+      gctx.beginPath(); gctx.arc(sx,sy,0.8,0,6.284); gctx.fill();
+    }
+    gctx.globalAlpha=1;
+    var base=colorAt(ma);
+
+    // 大气辉光
+    var isSnow = (ma<=760 && ma>=660);
+    var halo=gctx.createRadialGradient(GX,GY,GR*0.98,GX,GY,GR*1.28);
+    halo.addColorStop(0, isSnow?"rgba(190,220,255,.45)":"rgba(110,180,255,.28)");
+    halo.addColorStop(1,"rgba(110,180,255,0)");
+    gctx.fillStyle=halo; gctx.beginPath(); gctx.arc(GX,GY,GR*1.28,0,6.284); gctx.fill();
+
+    // 球体
+    var g=gctx.createRadialGradient(GX-GR*0.35,GY-GR*0.4,GR*0.1,GX,GY,GR);
+    g.addColorStop(0,lighten(base,0.35)); g.addColorStop(0.6,base); g.addColorStop(1,darken(base,0.45));
+    gctx.save(); gctx.beginPath(); gctx.arc(GX,GY,GR,0,6.284); gctx.clip();
+    gctx.fillStyle=g; gctx.fillRect(GX-GR,GY-GR,GR*2,GR*2);
+
+    // 大陆/云斑（3D 投影）
+    rot += 0.0025;
+    for(var b=0;b<blobs.length;b++){
+      var bl=blobs[b];
+      var lon=bl.lon+rot, clat=Math.cos(bl.lat), slat=Math.sin(bl.lat);
+      var x3=clat*Math.sin(lon), y3=slat, z3=clat*Math.cos(lon);
+      if(z3<=0.02) continue;
+      var px=GX+x3*GR*0.94, py=GY-y3*GR*0.94;
+      var sz=GR*bl.s*z3;
+      // 陆地颜色随时代变化
+      var landC = ma>2400 ? "rgba(150,70,40,.65)" : (isSnow? "rgba(255,255,255,.85)" : "rgba(70,120,70,.55)");
+      if(ma<541) landC="rgba(120,80,60,.5)";
+      gctx.globalAlpha=0.5*Math.min(1,z3+0.4);
+      gctx.fillStyle= landC;
+      gctx.beginPath(); gctx.ellipse(px,py,sz*1.35,sz*0.85, bl.lat, 0, 6.284); gctx.fill();
+    }
+    gctx.globalAlpha=1;
+    // 熔岩期裂纹
+    if(ma>3200){
+      gctx.globalAlpha=0.5; gctx.strokeStyle="#ffd07a"; gctx.lineWidth=1.2;
+      for(var k=0;k<7;k++){
+        gctx.beginPath();
+        gctx.moveTo(GX-GR+ k*GR/3.2, GY-GR*0.6);
+        gctx.quadraticCurveTo(GX + Math.sin(k+t)*GR*0.5, GY, GX-GR+k*GR/3.2, GY+GR*0.6);
+        gctx.stroke();
+      }
+      gctx.globalAlpha=1;
+    }
+    gctx.restore();
+
+    // 高光/暗边
+    var hl=gctx.createRadialGradient(GX-GR*.4,GY-GR*.45,GR*.02,GX,GY,GR*1.05);
+    hl.addColorStop(0,"rgba(255,255,255,.22)"); hl.addColorStop(.45,"rgba(255,255,255,.02)"); hl.addColorStop(1,"rgba(0,0,0,.45)");
+    gctx.fillStyle=hl; gctx.beginPath(); gctx.arc(GX,GY,GR,0,6.284); gctx.fill();
+
+    // 标注
+    gctx.font="600 12px -apple-system,'PingFang SC',sans-serif"; gctx.textAlign="center";
+    gctx.fillStyle="rgba(233,238,251,.85)";
+    gctx.fillText(fmtAge(ma), GX, GH-10);
+  }
+  function lighten(c,amt){ return shift(c,amt); }
+  function darken(c,amt){ return shift(c,-amt); }
+  function shift(c,amt){
+    var m=c.match(/rgb\((\d+),(\d+),(\d+)\)/); if(!m) return c;
+    function f(x){ return Math.max(0,Math.min(255, Math.round(+x + amt*255))); }
+    return "rgb("+f(m[1])+","+f(m[2])+","+f(m[3])+")";
+  }
+
+  /* ============ 时间控制 ============ */
+  function update(){
+    var ma=state.age, E=eraAt(ma);
+    clock.textContent=fmtAge(ma);
+    eraPill.textContent=E.name;
+    subInfo.textContent=(E.note && E.note!=="——") ? E.note : ("处于"+E.eon+"时期");
+    var u=xOfAge(ma)*100;
+    needle.style.left=u+"%";
+    ntip.textContent=fmtAge(ma);
+    renderInfo(); renderLife(); drawGlobe();
+  }
+  function goTo(age){ state.age=Math.max(0,Math.min(4600,age)); update(); }
+
+  // 拖动时间轴
+  var dragging=false;
+  function pick(ev){
+    var r=track.getBoundingClientRect();
+    var x=(ev.touches?ev.touches[0].clientX:ev.clientX)-r.left;
+    var u=Math.max(0,Math.min(1,x/r.width));
+    goTo(ageOfX(u));
+  }
+  axisbox.addEventListener("pointerdown",function(ev){ dragging=true; axisbox.setPointerCapture(ev.pointerId); pause(); pick(ev); });
+  axisbox.addEventListener("pointermove",function(ev){ if(dragging) pick(ev); });
+  axisbox.addEventListener("pointerup",function(){ dragging=false; });
+  axisbox.addEventListener("pointercancel",function(){ dragging=false; });
+
+  // 播放
+  var playBtn=document.getElementById("playBtn");
+  var rafId=null, lastT=0;
+  function tick(ts){
+    if(!state.playing) return;
+    if(!lastT) lastT=ts;
+    var dt=(ts-lastT)/1000; lastT=ts;
+    // 每秒推进：基础 46Ma * speed / (可视时间) —— 显生宙自动放慢以看清
+    var base = state.age>541 ? 55 : 12; // Ma/s
+    state.age -= base*state.speed*dt;
+    if(state.age<=0){ state.age=0; update(); pause(); playBtn.textContent="▶ 播放46亿年"; return; }
+    update();
+    rafId=requestAnimationFrame(tick);
+  }
+  function play(){
+    if(state.playing) return;
+    if(state.age<=0) state.age=4600;
+    state.playing=true; lastT=0; playBtn.textContent="⏸ 暂停"; playBtn.classList.add("primary");
+    rafId=requestAnimationFrame(tick);
+  }
+  function pause(){ state.playing=false; if(rafId) cancelAnimationFrame(rafId); rafId=null; }
+  playBtn.addEventListener("click",function(){ state.playing? (pause(), playBtn.textContent="▶ 继续播放") : play(); });
+  document.getElementById("resetBtn").addEventListener("click",function(){ pause(); playBtn.textContent="▶ 播放46亿年"; goTo(4600); });
+  document.getElementById("endBtn").addEventListener("click",function(){ pause(); playBtn.textContent="▶ 播放46亿年"; goTo(0); });
+  document.getElementById("spdBox").addEventListener("click",function(e){
+    var b=e.target.closest("button"); if(!b) return;
+    state.speed=+b.dataset.s;
+    var bs=document.getElementById("spdBox").querySelectorAll("button");
+    for(var i=0;i<bs.length;i++) bs[i].classList.toggle("on", bs[i]===b);
+  });
+
+  // 键盘
+  document.addEventListener("keydown",function(e){
+    if(e.key==="ArrowRight"){ pause(); goTo(state.age - (e.shiftKey?200:40)); e.preventDefault(); }
+    if(e.key==="ArrowLeft"){ pause(); goTo(state.age + (e.shiftKey?200:40)); e.preventDefault(); }
+    if(e.key===" "){ state.playing?pause():(playBtn.textContent="⏸ 暂停",play()); e.preventDefault(); }
+  });
+
+  /* ============ 初始化 ============ */
+  renderTrack(); renderEvents(); renderStrata();
+  resizeGlobe(); update();
+  window.addEventListener("resize",function(){ resizeGlobe(); });
+  setInterval(function(){ if(!state.playing) drawGlobe(); }, 90); // 保持自转
+})();
+</script>
+</body>
+</html>
