@@ -6,25 +6,20 @@
 <title>地球的圈层结构 · 可交互探究 | 第一章 宇宙中的地球</title>
 <style>
   :root{
-    --bg0:#060912; --bg1:#0b1220; --bg2:#101a2e;
-    --card:rgba(255,255,255,.045); --card2:rgba(255,255,255,.075);
+    --bg0:#060912; --card:rgba(255,255,255,.045); --card2:rgba(255,255,255,.075);
     --line:rgba(255,255,255,.10); --line2:rgba(255,255,255,.18);
     --txt:#e9eefb; --txt2:#9aa7c2; --txt3:#6b7997;
     --red:#ff5a6a; --blue:#4cc9f0; --gold:#ffcf5c; --orange:#ff8a3d; --green:#4ade80; --violet:#a78bfa;
-    --crust:#b08968; --mantle:#d1502a; --outer:#ff9a2e; --inner:#ffe680;
   }
   *{box-sizing:border-box;margin:0;padding:0}
   html,body{height:100%}
   body{
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",system-ui,sans-serif;
     background:radial-gradient(1200px 800px at 15% -10%, #14203c 0%, transparent 55%),
-               radial-gradient(1000px 700px at 100% 0%, #241633 0%, transparent 50%),
-               var(--bg0);
-    color:var(--txt); line-height:1.55; min-height:100%; padding:22px 18px 60px;
-    -webkit-font-smoothing:antialiased;
+               radial-gradient(1000px 700px at 100% 0%, #241633 0%, transparent 50%), var(--bg0);
+    color:var(--txt); line-height:1.55; min-height:100%; padding:22px 18px 60px; -webkit-font-smoothing:antialiased;
   }
   .wrap{max-width:1180px;margin:0 auto}
-  /* ---------- header ---------- */
   header.hd{display:flex;flex-wrap:wrap;align-items:flex-end;gap:14px;justify-content:space-between;margin-bottom:20px}
   .hd-l h1{font-size:clamp(21px,3vw,30px);letter-spacing:.5px;font-weight:800}
   .hd-l h1 .accent{background:linear-gradient(92deg,var(--gold),var(--orange));-webkit-background-clip:text;background-clip:text;color:transparent}
@@ -32,41 +27,44 @@
   .hd-r{display:flex;gap:8px;flex-wrap:wrap}
   .tag{font-size:12px;padding:5px 11px;border-radius:999px;border:1px solid var(--line2);color:var(--txt2);background:rgba(255,255,255,.03);white-space:nowrap}
   .tag.hot{border-color:rgba(255,138,61,.5);color:#ffb27a;background:rgba(255,138,61,.10)}
-  /* ---------- layout ---------- */
   .board{display:grid;grid-template-columns:minmax(320px,1.05fr) minmax(320px,1fr);gap:16px}
   @media(max-width:860px){.board{grid-template-columns:1fr}}
   .panel{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px;position:relative;overflow:hidden}
   .panel .ttl{font-size:12.5px;letter-spacing:1.5px;color:var(--txt3);text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:7px}
   .dot{width:7px;height:7px;border-radius:50%;background:var(--gold);box-shadow:0 0 10px var(--gold)}
   canvas{display:block;width:100%;touch-action:none;border-radius:12px}
-  #earthCv{height:clamp(340px,46vw,470px);cursor:crosshair}
+  #earthCv{height:clamp(360px,48vw,486px);cursor:crosshair}
   #waveCv{height:clamp(300px,42vw,438px)}
-  /* ---------- probe controls ---------- */
   .ctrl{margin-top:12px}
   .depth-row{display:flex;align-items:center;gap:12px}
-  .depth-big{font-variant-numeric:tabular-nums;font-weight:800;font-size:26px;color:var(--gold);min-width:128px;letter-spacing:.5px}
+  .depth-big{font-variant-numeric:tabular-nums;font-weight:800;font-size:26px;color:var(--gold);min-width:132px;letter-spacing:.5px}
   .depth-big small{font-size:13px;color:var(--txt3);font-weight:600;margin-left:3px}
   input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:26px;background:transparent;cursor:pointer}
   input[type=range]::-webkit-slider-runnable-track{height:7px;border-radius:5px;
-    background:linear-gradient(90deg,#b08968 0 6%,#d1502a 6% 42%,#ff9a2e 42% 63%,#ffe680 63% 100%)}
+    background:linear-gradient(90deg,#b08968 0 8%,#d1502a 8% 44%,#ff9a2e 44% 65%,#ffe680 65% 100%)}
   input[type=range]::-moz-range-track{height:7px;border-radius:5px;background:linear-gradient(90deg,#b08968,#d1502a,#ff9a2e,#ffe680)}
   input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;
     background:#fff;border:3px solid #1a2338;box-shadow:0 0 0 1px rgba(255,255,255,.6),0 2px 8px rgba(0,0,0,.6);margin-top:-7px}
-  input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:#fff;border:3px solid #1a2338;box-shadow:0 0 0 1px rgba(255,255,255,.6)}
-  .presets{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+  input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:#fff;border:3px solid #1a2338}
+  .rowctl{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:10px}
   .pbtn{font-size:11.5px;padding:4px 9px;border-radius:8px;border:1px solid var(--line2);background:rgba(255,255,255,.03);color:var(--txt2);cursor:pointer;transition:.16s;font-family:inherit}
   .pbtn:hover{border-color:var(--gold);color:var(--gold);background:rgba(255,207,92,.08)}
   .pbtn.active{background:linear-gradient(180deg,rgba(255,207,92,.22),rgba(255,138,61,.14));border-color:var(--gold);color:#ffe6a8}
-  /* ---------- readouts ---------- */
+  .pbtn.play{border-color:var(--blue);color:var(--blue)}
+  .pbtn.play:hover{background:rgba(76,201,240,.12);border-color:var(--blue);color:#bff0ff}
+  .switches{display:flex;flex-wrap:wrap;gap:14px;margin-top:11px;padding-top:10px;border-top:1px solid var(--line)}
+  .sw{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--txt2);cursor:pointer;user-select:none}
+  .sw input{width:15px;height:15px;accent-color:#ff8a3d;cursor:pointer}
+  .hint{font-size:11.5px;color:var(--txt3);margin-top:9px}
+  kbd{font-family:inherit;font-size:11px;background:rgba(255,255,255,.08);border:1px solid var(--line2);border-radius:5px;padding:1px 6px;color:var(--txt2)}
   .readouts{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-top:16px}
   @media(max-width:860px){.readouts{grid-template-columns:repeat(3,1fr)}}
   @media(max-width:440px){.readouts{grid-template-columns:repeat(2,1fr)}}
   .ro{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:11px 12px;position:relative;overflow:hidden}
   .ro::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--c,var(--gold));opacity:.85}
-  .ro .k{font-size:11px;color:var(--txt3);letter-spacing:.4px}
+  .ro .k{font-size:11px;color:var(--txt3)}
   .ro .v{font-size:17px;font-weight:750;margin-top:3px;font-variant-numeric:tabular-nums}
   .ro .v small{font-size:11px;color:var(--txt2);font-weight:600;margin-left:2px}
-  /* ---------- layer cards ---------- */
   .sec-h{display:flex;align-items:center;gap:10px;margin:26px 0 12px;font-size:14px;letter-spacing:1.2px;color:var(--txt2);text-transform:uppercase}
   .sec-h::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,var(--line2),transparent)}
   .layers{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
@@ -80,8 +78,17 @@
   .lcard h3 em{font-style:normal;font-size:11px;color:var(--txt3);font-weight:500}
   .lcard .rng{font-size:12px;color:var(--gold);margin:5px 0 8px;font-variant-numeric:tabular-nums}
   .lcard p{font-size:12.3px;color:var(--txt2);line-height:1.62}
-  /* ---------- notes ---------- */
-  .notes{display:grid;grid-template-columns:1.15fr .85fr;gap:14px}
+  /* 浅部细部条 */
+  .fine{display:grid;grid-template-columns:1.05fr .95fr;gap:14px}
+  @media(max-width:860px){.fine{grid-template-columns:1fr}}
+  .strata{display:flex;flex-direction:column;border-radius:12px;overflow:hidden;border:1px solid var(--line2)}
+  .srow{display:flex;align-items:center;gap:10px;padding:9px 12px;font-size:12.5px;transition:.2s;opacity:.62}
+  .srow .nm{font-weight:700;min-width:112px}
+  .srow .dp{margin-left:auto;font-size:11.5px;color:var(--txt3);font-variant-numeric:tabular-nums}
+  .srow.on{opacity:1;box-shadow:inset 0 0 0 1px rgba(255,255,255,.5)}
+  .srow.on .dp{color:#fff}
+  /* 知识卡 */
+  .notes{display:grid;grid-template-columns:1.1fr .9fr;gap:14px}
   @media(max-width:860px){.notes{grid-template-columns:1fr}}
   .note{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px}
   .note h4{font-size:14px;margin-bottom:10px;display:flex;align-items:center;gap:8px}
@@ -93,24 +100,23 @@
   .warn li::before{background:var(--red)}
   .warn h4 .ic{background:rgba(255,90,106,.16);color:var(--red)}
   .pill{display:inline-block;font-size:11px;padding:1px 7px;border-radius:6px;background:rgba(76,201,240,.14);color:var(--blue);margin:0 2px}
-  /* ---------- outer spheres ---------- */
+  .wavetbl{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:4px}
+  .wavetbl th,.wavetbl td{border:1px solid var(--line);padding:7px 9px;text-align:left}
+  .wavetbl th{color:var(--txt3);font-weight:600;font-size:11.5px}
+  .wavetbl td b{color:var(--txt)}
   .outer{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:12px}
   @media(max-width:860px){.outer{grid-template-columns:1fr}}
   .ocard{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:15px;position:relative;overflow:hidden}
+  .ocard .bar{position:absolute;left:0;top:0;height:100%;width:3px;background:var(--c,var(--blue))}
   .ocard .ic{font-size:22px;margin-bottom:8px}
   .ocard h3{font-size:15px;display:flex;gap:8px;align-items:baseline}
   .ocard h3 span{font-size:11px;color:var(--txt3);font-weight:400}
   .ocard p{font-size:12.4px;color:var(--txt2);margin-top:7px;line-height:1.62}
-  .ocard .bar{position:absolute;left:0;top:0;height:100%;width:3px;background:var(--c)}
-  /* ---------- footer ---------- */
   footer.ft{margin-top:34px;padding-top:16px;border-top:1px solid var(--line);display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;color:var(--txt3);font-size:12px}
-  .hint{font-size:11.5px;color:var(--txt3);margin-top:8px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
-  kbd{font-family:inherit;font-size:11px;background:rgba(255,255,255,.08);border:1px solid var(--line2);border-radius:5px;padding:1px 6px;color:var(--txt2)}
 </style>
 </head>
 <body>
 <div class="wrap">
-
   <header class="hd">
     <div class="hd-l">
       <h1>地球的<span class="accent">圈层结构</span> · 可交互探究</h1>
@@ -124,7 +130,6 @@
   </header>
 
   <div class="board">
-    <!-- 地球剖面 -->
     <section class="panel">
       <div class="ttl"><span class="dot"></span>地球内部剖面 · 探针</div>
       <canvas id="earthCv"></canvas>
@@ -133,62 +138,76 @@
           <div class="depth-big"><span id="depthVal">0</span><small>km</small></div>
           <input type="range" id="depthRange" min="0" max="1000" value="0" step="1" aria-label="深度">
         </div>
-        <div class="presets" id="presets"></div>
-        <div class="hint">在地球上任意位置 <kbd>点击 / 拖动</kbd> 也可放置探针 · 拖动上方滑块精调深度</div>
+        <div class="rowctl" id="presets"></div>
+        <div class="switches" id="switches"></div>
+        <div class="hint">在地球上任意位置 <kbd>点击 / 拖动</kbd> 放置探针 · 或拖动滑块精调 · 键盘 <kbd>↑</kbd><kbd>↓</kbd> 微调（按住 Shift 步长×10）</div>
       </div>
     </section>
 
-    <!-- 地震波曲线 -->
     <section class="panel">
       <div class="ttl"><span class="dot" style="background:var(--blue);box-shadow:0 0 10px var(--blue)"></span>地震波速度 · 深度曲线</div>
       <canvas id="waveCv"></canvas>
       <div class="hint" style="margin-top:10px">
         <span style="color:var(--red)">━ 纵波(P)</span>
         <span style="color:var(--blue)">━ 横波(S)</span>
-        <span>速度突变处即为<strong style="color:var(--gold)">不连续面</strong></span>
+        <span>· 移动鼠标可读取任意深度数值 · 速度突变处即为<strong style="color:var(--gold)">不连续面</strong></span>
       </div>
     </section>
   </div>
 
-  <!-- 读数 -->
   <div class="readouts">
     <div class="ro" style="--c:var(--gold)"><div class="k">探测深度</div><div class="v" id="roDepth">0<small>km</small></div></div>
     <div class="ro" style="--c:var(--orange)"><div class="k">所在圈层</div><div class="v" id="roLayer">地壳</div></div>
     <div class="ro" style="--c:var(--green)"><div class="k">物质状态</div><div class="v" id="roState">固态</div></div>
-    <div class="ro" style="--c:var(--red)"><div class="k">纵波 P 速度</div><div class="v" id="roVp">5.8<small>km/s</small></div></div>
-    <div class="ro" style="--c:var(--blue)"><div class="k">横波 S 速度</div><div class="v" id="roVs">3.4<small>km/s</small></div></div>
+    <div class="ro" style="--c:var(--red)"><div class="k">纵波 P 速度</div><div class="v" id="roVp">6.0<small>km/s</small></div></div>
+    <div class="ro" style="--c:var(--blue)"><div class="k">横波 S 速度</div><div class="v" id="roVs">3.5<small>km/s</small></div></div>
     <div class="ro" style="--c:var(--violet)"><div class="k">温度 / 压力</div><div class="v" id="roTP" style="font-size:14px">15℃ / ~0</div></div>
   </div>
 
-  <!-- 圈层卡片 -->
   <div class="sec-h">四大内部圈层 · 点击定位</div>
   <div class="layers" id="layerCards"></div>
 
-  <!-- 结论 -->
-  <div class="sec-h">原理与考点</div>
+  <div class="sec-h">浅部细部 · 岩石圈 ≠ 地壳</div>
+  <div class="fine">
+    <div class="strata" id="strata"></div>
+    <div class="note" style="background:var(--card)">
+      <h4><span class="ic">🧱</span>别把「岩石圈」当成「地壳」</h4>
+      <ul>
+        <li><b>地壳：</b>莫霍界面以上的固体外壳，平均厚约 17 km（大陆约 39~41 km，大洋约 5~10 km）。</li>
+        <li><b>岩石圈：</b>= <b>地壳 + 上地幔顶部</b>（软流层以上），厚约 100 km，全部由岩石组成、是<b>固态</b>的。</li>
+        <li><b>软流层：</b>位于上地幔上部（约 100~400 km），物质呈熔融状态、可缓慢流动，一般认为是<b>岩浆的主要发源地</b>。</li>
+        <li>所以：<b>软流层在岩石圈之下</b>，不属于岩石圈。探针移到 250 km 处即落在软流层里。</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="sec-h">透视地球的「眼睛」· 地震波 &amp; 核心结论</div>
   <div class="notes">
     <div class="note">
-      <h4><span class="ic">✦</span>核心结论</h4>
-      <ul>
-        <li><b>划分依据：地震波。</b>纵波(P)速度快、能通过固体、液体和气体；横波(S)速度慢、<b>只能通过固体</b>。</li>
-        <li><b>莫霍界面（约33km）：</b>纵波和横波速度都<i>明显增加</i>，是地壳与地幔的分界。</li>
-        <li><b>古登堡界面（约2900km）：</b>纵波速度<i>突然下降</i>，<b>横波完全消失</b> → 证明外核为液态。</li>
-        <li><b>岩石圈</b> = 地壳 + 上地幔顶部（软流层以上），均由岩石组成，是<b>固态</b>的。</li>
-        <li>软流层位于上地幔上部（约80~400km），物质呈熔融状态、可缓慢流动，一般认为是<b>岩浆的主要发源地</b>。</li>
+      <h4><span class="ic">〰️</span>地震波：两种波，两把钥匙</h4>
+      <table class="wavetbl">
+        <tr><th>类型</th><th>速度</th><th>可通过介质</th><th>在界面处</th></tr>
+        <tr><td><b style="color:var(--red)">纵波 P</b></td><td>较快</td><td>固体、液体、气体</td><td>莫霍面：7.6→8.0；古登堡面：13.3→8.1</td></tr>
+        <tr><td><b style="color:var(--blue)">横波 S</b></td><td>较慢</td><td><b>只能通过固体</b></td><td>莫霍面：4.2→4.4；古登堡面：<b>完全消失</b></td></tr>
+      </table>
+      <ul style="margin-top:11px">
+        <li><b>划分依据：</b>地震波速度的突变 → 找到两个不连续面 → 划分三大圈层。</li>
+        <li><b>莫霍界面（大陆约 33 km）：</b>P、S 波速度都明显增加 → 地壳 / 地幔之界。</li>
+        <li><b>古登堡界面（约 2900 km）：</b>P 波突然下降、<b>S 波完全消失</b> → 证明外核为液态。</li>
       </ul>
     </div>
     <div class="note warn">
       <h4><span class="ic">!</span>易错点警示</h4>
       <ul>
-        <li>地壳厚度<b>不均一</b>：大陆部分平均约33km，大洋部分平均仅约6km，<b>整体平均约17km</b>。</li>
-        <li>岩石圈 <span class="pill">≠</span> 地壳！岩石圈还包含上地幔顶部。</li>
+        <li>地壳厚度<b>不均一</b>：大陆厚（约39~41km）、大洋薄（约5~10km），<b>平均约17km</b>。</li>
+        <li>岩石圈 <span class="pill">≠</span> 地壳 —— 岩石圈还包含<b>上地幔顶部</b>。</li>
         <li>横波在古登堡界面以下<b>消失</b>，是判断外核为液态的关键证据。</li>
-        <li>软流层在<b>上地幔</b>中，不在岩石圈内（位于岩石圈之下）。</li>
+        <li>软流层在<b>上地幔</b>中、岩石圈之下，不在岩石圈内。</li>
+        <li>地壳由多种元素组成，其中<b>氧、硅、铝、铁</b>含量最多（氧约占1/2）；上部为硅铝层、下部为硅镁层。</li>
       </ul>
     </div>
   </div>
 
-  <!-- 外部圈层 -->
   <div class="sec-h">地球的外部圈层</div>
   <div class="outer">
     <div class="ocard" style="--c:var(--blue)"><div class="bar"></div><div class="ic">🌬️</div>
@@ -211,451 +230,357 @@
 <script>
 (function(){
   "use strict";
-  var RE = 6371; // 地球平均半径 km
+  var RE = 6371;
 
-  /* ============ 数据 ============ */
   var LAYERS = [
-    { key:"crust", name:"地壳", en:"Crust", from:0, to:17, c:"#b08968", vis:[1.00,0.93], state:"固态",
-      rng:"0 ~ 17 km（平均）",
-      desc:"地面以下、莫霍界面以上的固体外壳。厚度不均：大陆部分平均约33km，大洋部分平均约6km。由各类岩石组成，主要元素为氧、硅、铝、铁、钙、钠、钾、镁等。",
-      detail:"厚度不均，大陆厚、大洋薄；是岩石圈的一部分。" },
-    { key:"mantle", name:"地幔", en:"Mantle", from:17, to:2900, c:"#d1502a", vis:[0.93,0.56], state:"固态（软流层呈熔融态）",
-      rng:"17 ~ 2900 km",
-      desc:"位于莫霍界面与古登堡界面之间，分为上地幔（17~1000km）和下地幔（1000~2900km）。上地幔上部存在软流层（约80~400km），物质呈熔融状态、可缓慢流动，一般认为是岩浆的主要发源地。",
-      detail:"上地幔顶部（软流层以上）与地壳共同组成岩石圈。" },
+    { key:"crust", name:"地壳", en:"Crust", from:0, to:33, c:"#b08968", vis:[1.00,0.93], state:"固态",
+      rng:"0 ~ 33 km（大陆平均）",
+      desc:"莫霍界面以上的固体外壳，由各类岩石组成。厚度不均：大陆部分平均约39~41km，大洋部分平均约5~10km，全球平均约17km。主要元素为氧、硅、铝、铁（氧约占一半）。" },
+    { key:"mantle", name:"地幔", en:"Mantle", from:33, to:2900, c:"#d1502a", vis:[0.93,0.56], state:"固态（软流层呈熔融态）",
+      rng:"33 ~ 2900 km",
+      desc:"位于莫霍界面与古登堡界面之间，厚约2800多千米，分上地幔（至约1000km）和下地幔。上地幔上部的软流层（约100~400km）呈熔融状态、可缓慢流动，一般认为是岩浆的主要发源地。" },
     { key:"outercore", name:"外核", en:"Outer Core", from:2900, to:5150, c:"#ff9a2e", vis:[0.56,0.28], state:"液态（熔融金属）",
       rng:"2900 ~ 5150 km",
-      desc:"位于古登堡界面以下。横波不能通过，说明其物质接近液态；由铁、镍等金属组成。外核的流动可能与地球磁场的产生有关。",
-      detail:"横波(S)在此完全消失 —— 判断其为液态的关键证据。" },
+      desc:"位于古登堡界面以下。横波不能通过，说明其物质接近液态（呈熔融状态）；由铁、镍等金属组成。外核物质的运动可能与地球磁场的产生有关。" },
     { key:"innercore", name:"内核", en:"Inner Core", from:5150, to:6371, c:"#ffe680", vis:[0.28,0.00], state:"固态",
       rng:"5150 ~ 6371 km",
-      desc:"地球的最内层。温度极高（可达5000℃以上）、压力巨大，但物质仍呈固态；主要由铁和镍组成，是地球密度最大的部分。",
-      detail:"高温高压下仍为固态，是地球的“心脏”。" }
+      desc:"地球的最内层。温度极高（可达5000℃以上）、压力和密度极大，但物质仍呈固态；主要由铁和镍组成，是地球密度最大的部分。" }
   ];
 
-  // 地震波速度-深度数据 [深度, Vp, Vs]
+  // 地震波速度-深度数据 [深度, Vp, Vs]（对齐教材：莫霍面 7.6→8.0 / 古登堡面 13.3→8.1、S消失）
   var WAVE = [
-    [0,5.8,3.4],[15,6.3,3.7],[33,8.1,4.5],[100,8.05,4.45],[250,8.5,4.7],
+    [0,6.0,3.5],[20,6.8,3.9],[33,8.0,4.4],[100,8.1,4.5],[250,8.4,4.6],
     [410,9.0,5.0],[660,10.2,5.6],[1000,11.1,6.0],[1500,11.8,6.4],
-    [2000,12.4,6.7],[2500,13.0,7.0],[2889,13.7,7.3],
-    [2900,8.0,null],[3500,8.6,null],[4500,9.6,null],[5150,10.4,null],
+    [2000,12.4,6.7],[2500,13.0,7.0],[2889,13.3,7.3],
+    [2900,8.1,null],[3500,8.6,null],[4500,9.6,null],[5150,10.4,null],
     [5150,10.4,3.5],[5500,11.0,3.6],[6371,11.3,3.7]
   ];
   var CONT = [ {d:33,label:"莫霍界面"}, {d:2900,label:"古登堡界面"} ];
 
-  // 温度℃ / 压力GPa 近似剖面
-  var TEMP = [[0,15],[17,450],[33,650],[410,1550],[670,1900],[1000,2200],[2900,3700],[5150,4500],[6371,5500]];
-  var PRES = [[0,0.0001],[17,0.5],[33,0.9],[670,24],[2900,136],[5150,329],[6371,364]];
+  var TEMP = [[0,15],[33,600],[100,1300],[410,1550],[670,1900],[1000,2200],[2900,3700],[5150,4500],[6371,5500]];
+  var PRES = [[0,0.0001],[33,0.9],[100,3],[670,24],[2900,136],[5150,329],[6371,364]];
+  // 浅部细部条 [名称, 深度文本, 顶depth, 底depth, 颜色]
+  var FINE = [
+    {nm:"地壳",        dp:"0 ~ 33 km（大陆）",   top:0,   bot:33,  c:"#b08968", dark:true},
+    {nm:"上地幔顶部",  dp:"33 ~ 100 km",         top:33,  bot:100, c:"#c2603a", dark:true},
+    {nm:"软流层",      dp:"约 100 ~ 400 km",     top:100, bot:400, c:"#ff9a2e", dark:true},
+    {nm:"上地幔（软流层以下）", dp:"400 km 以下", top:400, bot:900, c:"#8a2f1c", dark:false}
+  ];
 
-  function interp(tbl, d){
+  function interp(tbl,d){
     if(d<=tbl[0][0]) return tbl[0][1];
-    for(var i=0;i<tbl.length-1;i++){
-      var a=tbl[i], b=tbl[i+1];
-      if(d>=a[0] && d<=b[0]){ var t=(d-a[0])/((b[0]-a[0])||1); return a[1]+(b[1]-a[1])*t; }
-    }
+    for(var i=0;i<tbl.length-1;i++){ var a=tbl[i],b=tbl[i+1];
+      if(d>=a[0]&&d<=b[0]){ var t=(d-a[0])/((b[0]-a[0])||1); return a[1]+(b[1]-a[1])*t; } }
     return tbl[tbl.length-1][1];
   }
   function waveAt(d){
-    var vp=null, vs=null;
-    for(var i=0;i<WAVE.length-1;i++){
-      var a=WAVE[i], b=WAVE[i+1];
-      if(d>=a[0] && d<=b[0] && b[0]>a[0]){
-        var t=(d-a[0])/(b[0]-a[0]);
-        if(a[1]!=null && b[1]!=null) vp=a[1]+(b[1]-a[1])*t;
-        if(a[2]!=null && b[2]!=null) vs=a[2]+(b[2]-a[2])*t;
-        break;
-      }
-    }
+    var vp=null,vs=null;
+    for(var i=0;i<WAVE.length-1;i++){ var a=WAVE[i],b=WAVE[i+1];
+      if(d>=a[0]&&d<=b[0]&&b[0]>a[0]){ var t=(d-a[0])/(b[0]-a[0]);
+        if(a[1]!=null&&b[1]!=null) vp=a[1]+(b[1]-a[1])*t;
+        if(a[2]!=null&&b[2]!=null) vs=a[2]+(b[2]-a[2])*t; break; } }
     return {vp:vp, vs:vs};
   }
-  function layerAt(d){
-    for(var i=0;i<LAYERS.length;i++){ if(d>=LAYERS[i].from && d<=LAYERS[i].to) return LAYERS[i]; }
-    return LAYERS[LAYERS.length-1];
-  }
+  function layerAt(d){ for(var i=0;i<LAYERS.length;i++){ if(d>=LAYERS[i].from&&d<=LAYERS[i].to) return LAYERS[i]; } return LAYERS[LAYERS.length-1]; }
+  function depthToR(d){ d=Math.max(0,Math.min(RE,d));
+    for(var i=0;i<LAYERS.length;i++){ var L=LAYERS[i];
+      if(d>=L.from&&d<=L.to){ var t=(d-L.from)/((L.to-L.from)||1); return L.vis[0]+(L.vis[1]-L.vis[0])*t; } } return 0; }
+  function RtoDepth(r){ r=Math.max(0,Math.min(1,r));
+    for(var i=0;i<LAYERS.length;i++){ var L=LAYERS[i];
+      if(r<=L.vis[0]&&r>=L.vis[1]){ var t=(r-L.vis[0])/((L.vis[1]-L.vis[0])||1); return L.from+(L.to-L.from)*t; } } return 0; }
 
-  /* 深度 -> 视觉半径(0地心~1地表)，分层映射（地壳视觉放大约25倍，示意图） */
-  function depthToR(d){
-    d=Math.max(0,Math.min(RE,d));
-    for(var i=0;i<LAYERS.length;i++){
-      var L=LAYERS[i];
-      if(d>=L.from && d<=L.to){
-        var t=(d-L.from)/((L.to-L.from)||1);
-        return L.vis[0] + (L.vis[1]-L.vis[0])*t;
-      }
-    }
-    return 0;
-  }
-  function RtoDepth(r){
-    r=Math.max(0,Math.min(1,r));
-    for(var i=0;i<LAYERS.length;i++){
-      var L=LAYERS[i];
-      if(r<=L.vis[0] && r>=L.vis[1]){
-        var t=(r-L.vis[0])/((L.vis[1]-L.vis[0])||1);
-        return L.from + (L.to-L.from)*t;
-      }
-    }
-    return 0;
-  }
+  var state = { depth:0, hiLayer:null, show:{cont:true, asth:true}, auto:false, hover:null };
 
-  /* ============ 状态 ============ */
-  var state = { depth:0, hiLayer:null };
-
-  /* ============ 地球剖面 Canvas ============ */
+  /* ---------- 地球 ---------- */
   var ecv=document.getElementById("earthCv"), ectx=ecv.getContext("2d");
-  var EW=0,EH=0,DPR=1, CX=0,CY=0,RR=0;
-  var stars=[];
-  function mkStars(){
-    stars=[]; for(var i=0;i<70;i++){ stars.push({x:Math.random(),y:Math.random(),r:Math.random()*1.3+.3,a:Math.random()*.7+.2,p:Math.random()*6.28}); }
-  }
+  var EW=0,EH=0,DPR=1,CX=0,CY=0,RR=0, stars=[];
+  (function(){ for(var i=0;i<70;i++) stars.push({x:Math.random(),y:Math.random(),r:Math.random()*1.3+.3,a:Math.random()*.7+.2,p:Math.random()*6.28}); })();
   function resizeEarth(){
-    var rect=ecv.getBoundingClientRect();
-    DPR=Math.min(window.devicePixelRatio||1,2);
+    var rect=ecv.getBoundingClientRect(); DPR=Math.min(window.devicePixelRatio||1,2);
     EW=rect.width; EH=rect.height;
     ecv.width=Math.max(1,EW*DPR); ecv.height=Math.max(1,EH*DPR);
     ectx.setTransform(DPR,0,0,DPR,0,0);
-    CX=EW/2; CY=EH/2+8; RR=Math.min(EW,EH)*0.335;
-    drawEarth();
+    CX=EW/2; CY=EH/2+10; RR=Math.min(EW,EH)*0.335; drawEarth();
+  }
+  function roundRect(x,y,w,h,r){ ectx.beginPath(); ectx.moveTo(x+r,y);
+    ectx.arcTo(x+w,y,x+w,y+h,r); ectx.arcTo(x+w,y+h,x,y+h,r); ectx.arcTo(x,y+h,x,y,r); ectx.arcTo(x,y,x+w,y,r); ectx.closePath(); }
+  function fillRing(L,c1,c2){
+    var rO=RR*L.vis[0], rI=Math.max(0.001,RR*L.vis[1]);
+    var g=ectx.createRadialGradient(CX,CY,rI,CX,CY,rO); g.addColorStop(0,c2); g.addColorStop(1,c1);
+    ectx.fillStyle=g; ectx.beginPath(); ectx.arc(CX,CY,rO,0,6.284); ectx.fill();
+    if(rI>0.5){ ectx.beginPath(); ectx.arc(CX,CY,rI,0,6.284); ectx.fillStyle="#06090f"; ectx.fill(); }
   }
   function drawEarth(){
     ectx.clearRect(0,0,EW,EH);
-    // 星空
     var tt=Date.now()/1400;
     for(var i=0;i<stars.length;i++){ var s=stars[i];
-      ectx.globalAlpha=s.a*(0.55+0.45*Math.sin(tt+s.p));
-      ectx.fillStyle="#cfe0ff";
-      ectx.beginPath(); ectx.arc(s.x*EW, s.y*EH, s.r,0,6.284); ectx.fill();
-    }
+      ectx.globalAlpha=s.a*(0.55+0.45*Math.sin(tt+s.p)); ectx.fillStyle="#cfe0ff";
+      ectx.beginPath(); ectx.arc(s.x*EW,s.y*EH,s.r,0,6.284); ectx.fill(); }
     ectx.globalAlpha=1;
-
-    // 大气辉光
-    var halo=ectx.createRadialGradient(CX,CY,RR*0.98, CX,CY,RR*1.20);
-    halo.addColorStop(0,"rgba(120,190,255,.30)");
-    halo.addColorStop(.45,"rgba(80,150,255,.13)");
-    halo.addColorStop(1,"rgba(80,150,255,0)");
+    var halo=ectx.createRadialGradient(CX,CY,RR*0.98,CX,CY,RR*1.20);
+    halo.addColorStop(0,"rgba(120,190,255,.30)"); halo.addColorStop(.45,"rgba(80,150,255,.13)"); halo.addColorStop(1,"rgba(80,150,255,0)");
     ectx.fillStyle=halo; ectx.beginPath(); ectx.arc(CX,CY,RR*1.20,0,6.284); ectx.fill();
-
-    // 地表投影
-    ectx.save();
-    ectx.shadowColor="rgba(90,160,255,.35)"; ectx.shadowBlur=34;
-    ectx.fillStyle="#0a1428"; ectx.beginPath(); ectx.arc(CX,CY,RR,0,6.284); ectx.fill();
-    ectx.restore();
-
-    // 逐层绘制（从外到内）
-    // 地壳
-    fillRing(LAYERS[0], "#c9a878", "#8a6a4a");
-    fillRing(LAYERS[1], "#e2643a", "#8f2f1c");
-    fillRing(LAYERS[2], "#ffb347", "#e06a00");
-    // 内核（发光）
+    ectx.save(); ectx.shadowColor="rgba(90,160,255,.35)"; ectx.shadowBlur=34;
+    ectx.fillStyle="#0a1428"; ectx.beginPath(); ectx.arc(CX,CY,RR,0,6.284); ectx.fill(); ectx.restore();
+    fillRing(LAYERS[0],"#c9a878","#8a6a4a");
+    fillRing(LAYERS[1],"#e2643a","#8f2f1c");
+    fillRing(LAYERS[2],"#ffb347","#e06a00");
     var ir=RR*LAYERS[3].vis[0];
-    var g=ectx.createRadialGradient(CX-ir*0.25,CY-ir*0.3,ir*0.1, CX,CY,ir);
+    var g=ectx.createRadialGradient(CX-ir*0.25,CY-ir*0.3,ir*0.1,CX,CY,ir);
     g.addColorStop(0,"#fffbe6"); g.addColorStop(.55,"#ffe27a"); g.addColorStop(1,"#f5b73c");
-    ectx.save();
-    ectx.shadowColor="rgba(255,226,122,.85)"; ectx.shadowBlur=26;
-    ectx.fillStyle=g; ectx.beginPath(); ectx.arc(CX,CY,ir,0,6.284); ectx.fill();
-    ectx.restore();
-
-    // 各地圈层边界细描
+    ectx.save(); ectx.shadowColor="rgba(255,226,122,.85)"; ectx.shadowBlur=26;
+    ectx.fillStyle=g; ectx.beginPath(); ectx.arc(CX,CY,ir,0,6.284); ectx.fill(); ectx.restore();
     ectx.lineWidth=1;
-    for(var k=0;k<LAYERS.length;k++){
-      ectx.beginPath(); ectx.arc(CX,CY,RR*LAYERS[k].vis[0],0,6.284);
-      ectx.strokeStyle="rgba(255,255,255,.16)"; ectx.stroke();
-    }
-
-    // 地幔对流示意
-    ectx.save();
-    ectx.beginPath(); ectx.arc(CX,CY,RR*LAYERS[1].vis[0],0,6.284);
-    ectx.arc(CX,CY,RR*LAYERS[1].vis[1],0,6.284,true);
-    ectx.clip();
+    for(var k=0;k<LAYERS.length;k++){ ectx.beginPath(); ectx.arc(CX,CY,RR*LAYERS[k].vis[0],0,6.284);
+      ectx.strokeStyle="rgba(255,255,255,.16)"; ectx.stroke(); }
+    // 地幔对流
+    ectx.save(); ectx.beginPath();
+    ectx.arc(CX,CY,RR*LAYERS[1].vis[0],0,6.284); ectx.arc(CX,CY,RR*LAYERS[1].vis[1],0,6.284,true); ectx.clip();
     ectx.globalAlpha=.22; ectx.strokeStyle="#ffd0a0"; ectx.lineWidth=1.6;
     var mid=(LAYERS[1].vis[0]+LAYERS[1].vis[1])/2*RR;
-    for(var q=0;q<3;q++){
-      ectx.beginPath();
-      ectx.arc(CX, CY+(q-1)*42, mid, 3.14*1.15, 3.14*1.85);
-      ectx.stroke();
-    }
+    for(var q=0;q<3;q++){ ectx.beginPath(); ectx.arc(CX,CY+(q-1)*42,mid,3.14*1.15,3.14*1.85); ectx.stroke(); }
     ectx.restore();
-
-    // 高光
-    var hl=ectx.createRadialGradient(CX-RR*.42,CY-RR*.48,RR*.04, CX,CY,RR*1.15);
-    hl.addColorStop(0,"rgba(255,255,255,.20)");
-    hl.addColorStop(.4,"rgba(255,255,255,.03)");
-    hl.addColorStop(1,"rgba(0,0,0,0)");
+    // 软流层示意环
+    if(state.show.asth){
+      var rA=depthToR(100)*RR, rB=depthToR(400)*RR;
+      ectx.save();
+      ectx.beginPath(); ectx.arc(CX,CY,rA,0,6.284); ectx.arc(CX,CY,rB,0,6.284,true);
+      ectx.fillStyle="rgba(255,190,90,.34)"; ectx.fill();
+      ectx.restore();
+      // 引线
+      var ang=-2.36, px=CX+Math.cos(ang)*(rA+rB)/2, py=CY+Math.sin(ang)*(rA+rB)/2;
+      ectx.save(); ectx.strokeStyle="rgba(255,190,90,.85)"; ectx.lineWidth=1.2; ectx.setLineDash([3,3]);
+      ectx.beginPath(); ectx.moveTo(px,py); ectx.lineTo(px-40,py-30); ectx.stroke(); ectx.restore();
+      ectx.font="600 11px -apple-system,'PingFang SC',sans-serif"; ectx.fillStyle="#ffd79a"; ectx.textAlign="right";
+      ectx.fillText("软流层", px-44, py-30);
+    }
+    // 不连续面标注
+    if(state.show.cont){
+      drawContour(33,"莫霍界面 33km","right");
+      drawContour(2900,"古登堡界面 2900km","left");
+    }
+    // 高光/暗边
+    var hl=ectx.createRadialGradient(CX-RR*.42,CY-RR*.48,RR*.04,CX,CY,RR*1.15);
+    hl.addColorStop(0,"rgba(255,255,255,.20)"); hl.addColorStop(.4,"rgba(255,255,255,.03)"); hl.addColorStop(1,"rgba(0,0,0,0)");
     ectx.fillStyle=hl; ectx.beginPath(); ectx.arc(CX,CY,RR,0,6.284); ectx.fill();
-    // 暗边
-    var sh=ectx.createRadialGradient(CX+RR*.35,CY+RR*.4,RR*.2, CX,CY,RR);
+    var sh=ectx.createRadialGradient(CX+RR*.35,CY+RR*.4,RR*.2,CX,CY,RR);
     sh.addColorStop(0,"rgba(0,0,0,0)"); sh.addColorStop(1,"rgba(0,0,0,.42)");
     ectx.fillStyle=sh; ectx.beginPath(); ectx.arc(CX,CY,RR,0,6.284); ectx.fill();
-
-    // 高亮圈层环
-    if(state.hiLayer!=null){
-      var L=LAYERS[state.hiLayer];
-      ectx.save();
-      ectx.strokeStyle="rgba(255,255,255,.9)"; ectx.lineWidth=2;
-      ectx.setLineDash([5,5]); ectx.lineDashOffset=-(Date.now()/60)%10;
-      ectx.beginPath(); ectx.arc(CX,CY,RR*(L.vis[0]+L.vis[1])/2,0,6.284); ectx.stroke();
-      ectx.restore();
-    }
-
+    if(state.hiLayer!=null){ var L=LAYERS[state.hiLayer];
+      ectx.save(); ectx.strokeStyle="rgba(255,255,255,.9)"; ectx.lineWidth=2; ectx.setLineDash([5,5]);
+      ectx.lineDashOffset=-(Date.now()/60)%10;
+      ectx.beginPath(); ectx.arc(CX,CY,RR*(L.vis[0]+L.vis[1])/2,0,6.284); ectx.stroke(); ectx.restore(); }
     drawProbe();
-
-    // 底部标注
-    ectx.font="600 11px -apple-system,'PingFang SC',sans-serif";
-    ectx.fillStyle="rgba(154,167,194,.9)"; ectx.textAlign="center";
-    ectx.fillText("示意剖面（地壳厚度已放大约25倍）· 点击拖动即可探测", CX, EH-8);
+    ectx.font="600 10.5px -apple-system,'PingFang SC',sans-serif"; ectx.fillStyle="rgba(154,167,194,.85)"; ectx.textAlign="center";
+    ectx.fillText("示意剖面（地壳厚度已放大）· 点击拖动即可探测", CX, EH-7);
   }
-  function fillRing(L, c1, c2){
-    var rO=RR*L.vis[0], rI=Math.max(0.001, RR*L.vis[1]);
-    var g=ectx.createRadialGradient(CX,CY,rI, CX,CY,rO);
-    g.addColorStop(0,c2); g.addColorStop(1,c1);
-    ectx.fillStyle=g;
-    ectx.beginPath(); ectx.arc(CX,CY,rO,0,6.284); ectx.fill();
-    if(rI>0.5){ ectx.beginPath(); ectx.arc(CX,CY,rI,0,6.284);
-      ectx.fillStyle="rgba(6,9,18,1)"; ectx.fill(); }
-  }
-
-  // 探针：从地心指向正上方，长度 = 当前深度的视觉半径
-  function probePos(d){
+  function drawContour(d,label,side){
     var r=RR*depthToR(d);
-    return { x:CX, y:CY - r };
+    ectx.save(); ectx.strokeStyle="rgba(255,255,255,.55)"; ectx.lineWidth=1.4; ectx.setLineDash([4,4]);
+    ectx.beginPath(); ectx.arc(CX,CY,r,-2.72,-0.42); ectx.stroke(); ectx.restore();
+    var ang=(side==="right")? -0.42 : -2.72;
+    var px=CX+Math.cos(ang)*r, py=CY+Math.sin(ang)*r;
+    ectx.fillStyle="#fff"; ectx.beginPath(); ectx.arc(px,py,2.6,0,6.284); ectx.fill();
+    ectx.font="600 10.5px -apple-system,'PingFang SC',sans-serif";
+    ectx.textAlign=(side==="right")?"left":"right"; ectx.textBaseline="middle";
+    var tx=(side==="right")?px+7:px-7;
+    ectx.fillStyle="rgba(8,12,22,.85)";
+    var w=ectx.measureText(label).width+10;
+    roundRect((side==="right")?tx-4:tx-w+4, py-9, w, 18, 5); ectx.fill();
+    ectx.fillStyle="#dfe8f7"; ectx.fillText(label, tx, py+1);
+    ectx.textBaseline="alphabetic";
   }
+  function probePos(d){ return { x:CX, y:CY - RR*depthToR(d) }; }
   function drawProbe(){
     var p=probePos(state.depth);
-    // 探测射线（地心 -> 探针）
-    ectx.save();
-    ectx.strokeStyle="rgba(76,201,240,.5)"; ectx.lineWidth=1.4; ectx.setLineDash([4,4]);
+    ectx.save(); ectx.strokeStyle="rgba(76,201,240,.5)"; ectx.lineWidth=1.4; ectx.setLineDash([4,4]);
     ectx.beginPath(); ectx.moveTo(CX,CY); ectx.lineTo(p.x,p.y); ectx.stroke();
-    // 延伸到地表
-    ectx.strokeStyle="rgba(76,201,240,.22)";
-    ectx.beginPath(); ectx.moveTo(p.x,p.y); ectx.lineTo(CX, CY-RR); ectx.stroke();
-    ectx.restore();
-    // 脉冲环
+    ectx.strokeStyle="rgba(76,201,240,.22)"; ectx.beginPath(); ectx.moveTo(p.x,p.y); ectx.lineTo(CX,CY-RR); ectx.stroke(); ectx.restore();
     var pulse=(Date.now()/900)%1;
-    ectx.save();
-    ectx.strokeStyle="rgba(76,201,240,"+(0.5*(1-pulse))+")"; ectx.lineWidth=2;
-    ectx.beginPath(); ectx.arc(p.x,p.y, 6+pulse*16,0,6.284); ectx.stroke();
-    ectx.restore();
-    // 探头
-    ectx.save();
-    ectx.shadowColor="#4cc9f0"; ectx.shadowBlur=18;
-    ectx.fillStyle="#eafcff"; ectx.beginPath(); ectx.arc(p.x,p.y,5.5,0,6.284); ectx.fill();
-    ectx.restore();
+    ectx.save(); ectx.strokeStyle="rgba(76,201,240,"+(0.5*(1-pulse))+")"; ectx.lineWidth=2;
+    ectx.beginPath(); ectx.arc(p.x,p.y,6+pulse*16,0,6.284); ectx.stroke(); ectx.restore();
+    ectx.save(); ectx.shadowColor="#4cc9f0"; ectx.shadowBlur=18;
+    ectx.fillStyle="#eafcff"; ectx.beginPath(); ectx.arc(p.x,p.y,5.5,0,6.284); ectx.fill(); ectx.restore();
     ectx.fillStyle="#4cc9f0"; ectx.beginPath(); ectx.arc(p.x,p.y,2.4,0,6.284); ectx.fill();
-
-    // 深度标签牌
     var label=Math.round(state.depth)+" km";
     ectx.font="700 12px -apple-system,'PingFang SC',sans-serif";
     var tw=ectx.measureText(label).width+16, bx=p.x+14, by=p.y-11;
-    ectx.fillStyle="rgba(10,18,34,.92)";
-    roundRect(bx,by,tw,22,7); ectx.fill();
+    ectx.fillStyle="rgba(10,18,34,.92)"; roundRect(bx,by,tw,22,7); ectx.fill();
     ectx.strokeStyle="rgba(76,201,240,.6)"; ectx.lineWidth=1; roundRect(bx,by,tw,22,7); ectx.stroke();
-    ectx.fillStyle="#bff0ff"; ectx.textAlign="left"; ectx.textBaseline="middle";
-    ectx.fillText(label, bx+8, by+12);
-    ectx.textBaseline="alphabetic";
-  }
-  function roundRect(x,y,w,h,r){
-    ectx.beginPath();
-    ectx.moveTo(x+r,y); ectx.arcTo(x+w,y,x+w,y+h,r); ectx.arcTo(x+w,y+h,x,y+h,r);
-    ectx.arcTo(x,y+h,x,y,r); ectx.arcTo(x,y,x+w,y,r); ectx.closePath();
+    ectx.fillStyle="#bff0ff"; ectx.textAlign="left"; ectx.textBaseline="middle"; ectx.fillText(label,bx+8,by+12); ectx.textBaseline="alphabetic";
   }
 
-  /* ============ 地震波 Canvas ============ */
+  /* ---------- 地震波曲线 ---------- */
   var wcv=document.getElementById("waveCv"), wctx=wcv.getContext("2d");
-  var WW=0,WH=0;
+  var WW=0,WH=0, WPAD={l:46,r:18,t:26,b:36}, VMAX=14;
   function resizeWave(){
-    var rect=wcv.getBoundingClientRect();
-    WW=rect.width; WH=rect.height;
-    wcv.width=Math.max(1,WW*DPR); wcv.height=Math.max(1,WH*DPR);
-    wctx.setTransform(DPR,0,0,DPR,0,0);
-    drawWave();
+    var rect=wcv.getBoundingClientRect(); WW=rect.width; WH=rect.height;
+    wcv.width=Math.max(1,WW*DPR); wcv.height=Math.max(1,WH*DPR); wctx.setTransform(DPR,0,0,DPR,0,0); drawWave();
   }
   function drawWave(){
     wctx.clearRect(0,0,WW,WH);
-    var padL=46,padR=18,padT=26,padB=36;
-    var x0=padL,x1=WW-padR,y0=padT,y1=WH-padB;
-    var VMAX=14;
-    function sx(v){ return x0 + (v/VMAX)*(x1-x0); }
-    function sy(d){ return y0 + (d/RE)*(y1-y0); }
-
-    // 面板底
-    var grad=wctx.createLinearGradient(x0,y0,x0,y1);
-    grad.addColorStop(0,"rgba(76,201,240,.05)"); grad.addColorStop(1,"rgba(255,138,61,.06)");
+    var x0=WPAD.l,x1=WW-WPAD.r,y0=WPAD.t,y1=WH-WPAD.b;
+    function sx(v){ return x0+(v/VMAX)*(x1-x0); }
+    function sy(d){ return y0+(d/RE)*(y1-y0); }
+    var grad=wctx.createLinearGradient(x0,y0,x0,y1); grad.addColorStop(0,"rgba(76,201,240,.05)"); grad.addColorStop(1,"rgba(255,138,61,.06)");
     wctx.fillStyle=grad; wctx.fillRect(x0,y0,x1-x0,y1-y0);
-
-    // 网格
-    wctx.strokeStyle="rgba(255,255,255,.07)"; wctx.lineWidth=1; wctx.font="11px -apple-system,sans-serif";
-    wctx.fillStyle="rgba(154,167,194,.85)";
-    for(var v=0;v<=VMAX;v+=2){
-      wctx.beginPath(); wctx.moveTo(sx(v),y0); wctx.lineTo(sx(v),y1); wctx.stroke();
-      wctx.textAlign="center"; wctx.fillText(v, sx(v), y1+16);
-    }
+    wctx.lineWidth=1; wctx.font="11px -apple-system,sans-serif";
+    for(var v=0;v<=VMAX;v+=2){ wctx.strokeStyle="rgba(255,255,255,.07)"; wctx.beginPath(); wctx.moveTo(sx(v),y0); wctx.lineTo(sx(v),y1); wctx.stroke();
+      wctx.fillStyle="rgba(154,167,194,.85)"; wctx.textAlign="center"; wctx.fillText(v,sx(v),y1+16); }
     wctx.textAlign="right";
     var dtick=[0,1000,2000,3000,4000,5000,6371];
-    for(var i=0;i<dtick.length;i++){
-      var yy=sy(dtick[i]);
-      wctx.strokeStyle="rgba(255,255,255,.07)";
-      wctx.beginPath(); wctx.moveTo(x0,yy); wctx.lineTo(x1,yy); wctx.stroke();
-      wctx.fillText(dtick[i], x0-7, yy+4);
-    }
-    // 轴标题
-    wctx.save(); wctx.translate(13,(y0+y1)/2); wctx.rotate(-Math.PI/2);
-    wctx.textAlign="center"; wctx.fillStyle="rgba(154,167,194,.75)"; wctx.font="11px sans-serif";
-    wctx.fillText("深度 km", 0,0); wctx.restore();
-    wctx.textAlign="center"; wctx.fillStyle="rgba(154,167,194,.75)";
-    wctx.fillText("速度 km/s", (x0+x1)/2, y1+31);
-
-    // 不连续面
-    for(var c=0;c<CONT.length;c++){
-      var yy2=sy(CONT[c].d);
-      wctx.save();
-      wctx.strokeStyle="rgba(255,207,92,.75)"; wctx.lineWidth=1.3; wctx.setLineDash([6,5]);
-      wctx.beginPath(); wctx.moveTo(x0,yy2); wctx.lineTo(x1,yy2); wctx.stroke();
-      wctx.restore();
+    for(var i=0;i<dtick.length;i++){ var yy=sy(dtick[i]);
+      wctx.strokeStyle="rgba(255,255,255,.07)"; wctx.beginPath(); wctx.moveTo(x0,yy); wctx.lineTo(x1,yy); wctx.stroke();
+      wctx.fillStyle="rgba(154,167,194,.85)"; wctx.fillText(dtick[i],x0-7,yy+4); }
+    wctx.save(); wctx.translate(13,(y0+y1)/2); wctx.rotate(-Math.PI/2); wctx.textAlign="center";
+    wctx.fillStyle="rgba(154,167,194,.75)"; wctx.fillText("深度 km",0,0); wctx.restore();
+    wctx.textAlign="center"; wctx.fillStyle="rgba(154,167,194,.75)"; wctx.fillText("速度 km/s",(x0+x1)/2,y1+31);
+    for(var c=0;c<CONT.length;c++){ var yy2=sy(CONT[c].d);
+      wctx.save(); wctx.strokeStyle="rgba(255,207,92,.75)"; wctx.lineWidth=1.3; wctx.setLineDash([6,5]);
+      wctx.beginPath(); wctx.moveTo(x0,yy2); wctx.lineTo(x1,yy2); wctx.stroke(); wctx.restore();
       wctx.fillStyle="rgba(255,207,92,.95)"; wctx.font="700 10.5px -apple-system,'PingFang SC',sans-serif"; wctx.textAlign="left";
-      wctx.fillText(CONT[c].label+" "+CONT[c].d+"km", x0+5, yy2-5);
-    }
-
-    // S 波（分两段，中间断开）
-    strokeCurve(2, "#4cc9f0", 2.4, sx, sy);   // Vs
-    strokeCurve(1, "#ff5a6a", 2.4, sx, sy);   // Vp
-
-    // 探针水平线
+      wctx.fillText(CONT[c].label+" "+CONT[c].d+"km",x0+5,yy2-5); }
+    strokeCurve(2,"#4cc9f0",sx,sy);
+    strokeCurve(1,"#ff5a6a",sx,sy);
+    // 探针线
     var yy3=sy(state.depth);
-    wctx.save();
-    wctx.strokeStyle="rgba(255,255,255,.55)"; wctx.lineWidth=1; wctx.setLineDash([3,4]);
-    wctx.beginPath(); wctx.moveTo(x0,yy3); wctx.lineTo(x1,yy3); wctx.stroke();
-    wctx.restore();
+    wctx.save(); wctx.strokeStyle="rgba(255,255,255,.5)"; wctx.lineWidth=1; wctx.setLineDash([3,4]);
+    wctx.beginPath(); wctx.moveTo(x0,yy3); wctx.lineTo(x1,yy3); wctx.stroke(); wctx.restore();
     var wv=waveAt(state.depth);
-    // Vp 点
-    if(wv.vp!=null){ dot(sx(wv.vp),yy3,"#ff5a6a"); }
-    if(wv.vs!=null){ dot(sx(wv.vs),yy3,"#4cc9f0"); }
-  }
-  function dot(x,y,c){
-    wctx.save(); wctx.shadowColor=c; wctx.shadowBlur=10;
-    wctx.fillStyle="#fff"; wctx.beginPath(); wctx.arc(x,y,4,0,6.284); wctx.fill();
-    wctx.fillStyle=c; wctx.beginPath(); wctx.arc(x,y,2.4,0,6.284); wctx.fill();
-    wctx.restore();
-  }
-  function strokeCurve(idx, color, lw, sx, sy){
-    wctx.save(); wctx.strokeStyle=color; wctx.lineWidth=lw; wctx.lineJoin="round"; wctx.lineCap="round";
-    wctx.shadowColor=color; wctx.shadowBlur=8;
-    wctx.beginPath();
-    var started=false;
-    for(var i=0;i<WAVE.length;i++){
-      var p=WAVE[i];
-      if(p[idx]==null){ started=false; continue; }
-      var X=sx(p[idx]), Y=sy(p[0]);
-      if(!started){ wctx.moveTo(X,Y); started=true; } else { wctx.lineTo(X,Y); }
+    if(wv.vp!=null) dot(sx(wv.vp),yy3,"#ff5a6a");
+    if(wv.vs!=null) dot(sx(wv.vs),yy3,"#4cc9f0");
+    // hover 读数
+    if(state.hover!=null){
+      var hd=state.hover, hy=sy(hd), hv=waveAt(hd);
+      wctx.save(); wctx.strokeStyle="rgba(255,207,92,.5)"; wctx.lineWidth=1; wctx.setLineDash([2,3]);
+      wctx.beginPath(); wctx.moveTo(x0,hy); wctx.lineTo(x1,hy); wctx.stroke(); wctx.restore();
+      var txt=Math.round(hd)+"km  P "+(hv.vp!=null?hv.vp.toFixed(1):"—")+" / S "+(hv.vs!=null?hv.vs.toFixed(1):"—")+" km/s";
+      wctx.font="600 11px -apple-system,'PingFang SC',sans-serif"; wctx.textAlign="left";
+      var tw2=wctx.measureText(txt).width+14;
+      var bx=x0+6, by=Math.max(y0+2,Math.min(y1-24,hy-26));
+      wctx.fillStyle="rgba(10,18,34,.94)"; roundRectW(bx,by,tw2,20,6); wctx.fill();
+      wctx.strokeStyle="rgba(255,207,92,.6)"; wctx.lineWidth=1; roundRectW(bx,by,tw2,20,6); wctx.stroke();
+      wctx.fillStyle="#ffe6a8"; wctx.fillText(txt,bx+7,by+14);
     }
+  }
+  function roundRectW(x,y,w,h,r){ wctx.beginPath(); wctx.moveTo(x+r,y);
+    wctx.arcTo(x+w,y,x+w,y+h,r); wctx.arcTo(x+w,y+h,x,y+h,r); wctx.arcTo(x,y+h,x,y,r); wctx.arcTo(x,y,x+w,y,r); wctx.closePath(); }
+  function dot(x,y,c){ wctx.save(); wctx.shadowColor=c; wctx.shadowBlur=10;
+    wctx.fillStyle="#fff"; wctx.beginPath(); wctx.arc(x,y,4,0,6.284); wctx.fill();
+    wctx.fillStyle=c; wctx.beginPath(); wctx.arc(x,y,2.4,0,6.284); wctx.fill(); wctx.restore(); }
+  function strokeCurve(idx,color,sx,sy){
+    wctx.save(); wctx.strokeStyle=color; wctx.lineWidth=2.4; wctx.lineJoin="round"; wctx.lineCap="round";
+    wctx.shadowColor=color; wctx.shadowBlur=8; wctx.beginPath();
+    var started=false;
+    for(var i=0;i<WAVE.length;i++){ var p=WAVE[i]; if(p[idx]==null){ started=false; continue; }
+      var X=sx(p[idx]),Y=sy(p[0]); if(!started){ wctx.moveTo(X,Y); started=true; } else { wctx.lineTo(X,Y); } }
     wctx.stroke(); wctx.restore();
   }
+  wcv.addEventListener("pointermove",function(ev){
+    var rect=wcv.getBoundingClientRect(); var y=ev.clientY-rect.top;
+    var y0=WPAD.t, y1=WH-WPAD.b;
+    var u=(y-y0)/((y1-y0)||1);
+    if(u<0||u>1){ state.hover=null; } else { state.hover=u*RE; }
+    drawWave();
+  });
+  wcv.addEventListener("pointerleave",function(){ state.hover=null; drawWave(); });
 
-  /* ============ 读数 / UI ============ */
-  var elDepthVal=document.getElementById("depthVal");
-  var elRange=document.getElementById("depthRange");
-  var roDepth=document.getElementById("roDepth"), roLayer=document.getElementById("roLayer"),
-      roState=document.getElementById("roState"), roVp=document.getElementById("roVp"),
-      roVs=document.getElementById("roVs"), roTP=document.getElementById("roTP");
-
-  function fmtTemp(t){ return Math.round(t)+"℃"; }
-  function fmtPress(p){
-    if(p<0.001) return "~0.1MPa";
-    if(p<1) return (p*1000).toFixed(0)+"MPa";
-    return p.toFixed(0)+"GPa";
-  }
+  /* ---------- 读数 / UI ---------- */
+  var elDepthVal=document.getElementById("depthVal"), elRange=document.getElementById("depthRange");
+  var roDepth=document.getElementById("roDepth"), roLayer=document.getElementById("roLayer"), roState=document.getElementById("roState"),
+      roVp=document.getElementById("roVp"), roVs=document.getElementById("roVs"), roTP=document.getElementById("roTP");
+  function fmtPress(p){ if(p<0.001) return "~0.1MPa"; if(p<1) return (p*1000).toFixed(0)+"MPa"; return p.toFixed(0)+"GPa"; }
+  function sliderFromDepth(d){ return Math.round(1000*Math.pow(d/RE,1/3)); }
   function update(){
-    var d=state.depth, L=layerAt(d), wv=waveAt(d);
-    d=Math.round(d);
-    elDepthVal.textContent=d;
-    roDepth.innerHTML=d+'<small>km</small>';
-    roLayer.textContent=L.name;
-    roState.textContent=L.state;
+    var d=state.depth, L=layerAt(d), wv=waveAt(d), dr=Math.round(d);
+    elDepthVal.textContent=dr;
+    roDepth.innerHTML=dr+'<small>km</small>'; roLayer.textContent=L.name; roState.textContent=L.state;
     roVp.innerHTML=(wv.vp!=null?wv.vp.toFixed(2):"—")+'<small>km/s</small>';
     roVs.innerHTML=(wv.vs!=null?wv.vs.toFixed(2):"—")+'<small>km/s</small>';
-    var T=interp(TEMP,d), P=interp(PRES,d);
-    roTP.textContent=fmtTemp(T)+" / "+fmtPress(P);
-    // 滑块反映
-    elRange.value=Math.round(1000*Math.pow(d/RE,1/3));
-    updatePresetActive(d);
-    drawEarth(); drawWave();
+    roTP.textContent=Math.round(interp(TEMP,d))+"℃ / "+fmtPress(interp(PRES,d));
+    elRange.value=sliderFromDepth(d);
+    updatePresetActive(d); updateFineActive(d); drawEarth(); drawWave();
   }
-  // 滑块（非线性）：s -> depth = RE*(s/1000)^3
-  elRange.addEventListener("input",function(){
-    var s=+elRange.value/1000;
-    state.depth=RE*Math.pow(s,3);
-    update();
-  });
+  elRange.addEventListener("input",function(){ state.depth=RE*Math.pow(+elRange.value/1000,3); update(); });
 
-  /* 直接在地球上点击/拖动 */
   var dragging=false;
-  function depthFromEvt(ev){
-    var rect=ecv.getBoundingClientRect();
-    var x=ev.clientX-rect.left, y=ev.clientY-rect.top;
-    var dx=x-CX, dy=y-CY;
-    var dist=Math.sqrt(dx*dx+dy*dy);
-    var r=dist/RR;
-    if(r>1.02) r=1.02;
-    return RtoDepth(Math.min(1,r));
-  }
-  ecv.addEventListener("pointerdown",function(ev){
-    dragging=true; ecv.setPointerCapture(ev.pointerId);
-    state.depth=depthFromEvt(ev); update();
-  });
-  ecv.addEventListener("pointermove",function(ev){
-    if(!dragging) return;
-    state.depth=depthFromEvt(ev); update();
-  });
+  function depthFromEvt(ev){ var rect=ecv.getBoundingClientRect();
+    var x=ev.clientX-rect.left, y=ev.clientY-rect.top, dx=x-CX, dy=y-CY;
+    var r=Math.sqrt(dx*dx+dy*dy)/RR; return RtoDepth(Math.min(1,Math.max(0,r))); }
+  ecv.addEventListener("pointerdown",function(ev){ dragging=true; ecv.setPointerCapture(ev.pointerId); stopAuto(); state.depth=depthFromEvt(ev); update(); });
+  ecv.addEventListener("pointermove",function(ev){ if(!dragging) return; state.depth=depthFromEvt(ev); update(); });
   ecv.addEventListener("pointerup",function(){ dragging=false; });
   ecv.addEventListener("pointercancel",function(){ dragging=false; });
 
-  /* 预设 */
-  var PRESETS=[["地表",0],["地壳底",17],["软流层",100],["上地幔底",670],["地幔底",2900],["外核底",5150],["地心",6371]];
+  // 预设
+  var PRESETS=[["地表",0],["地壳底",33],["软流层",250],["上地幔底",670],["地幔底",2900],["外核底",5150],["地心",6371]];
   var presetBox=document.getElementById("presets");
-  PRESETS.forEach(function(p){
-    var b=document.createElement("button"); b.className="pbtn"; b.textContent=p[0];
-    b.dataset.d=p[1];
-    b.addEventListener("click",function(){ state.depth=p[1]; state.hiLayer=null; update(); renderLayers(); });
-    presetBox.appendChild(b);
-  });
-  function updatePresetActive(d){
-    var bs=presetBox.querySelectorAll(".pbtn");
-    for(var i=0;i<bs.length;i++){
-      var bd=+bs[i].dataset.d;
-      bs[i].classList.toggle("active", Math.abs(bd-d)<0.5);
-    }
+  PRESETS.forEach(function(p){ var b=document.createElement("button"); b.className="pbtn"; b.textContent=p[0]; b.dataset.d=p[1];
+    b.addEventListener("click",function(){ stopAuto(); state.depth=p[1]; state.hiLayer=null; update(); renderLayers(); }); presetBox.appendChild(b); });
+  var autoBtn=document.createElement("button"); autoBtn.className="pbtn play"; autoBtn.textContent="▶ 自动探测"; autoBtn.id="autoBtn";
+  autoBtn.addEventListener("click",function(){ state.auto?stopAuto():startAuto(); }); presetBox.appendChild(autoBtn);
+  function updatePresetActive(d){ var bs=presetBox.querySelectorAll(".pbtn");
+    for(var i=0;i<bs.length;i++){ if(bs[i].dataset.d===undefined) continue;
+      bs[i].classList.toggle("active", Math.abs(+bs[i].dataset.d-d)<0.5); } }
+
+  // 自动探测
+  var autoRAF=null, autoLast=0;
+  function startAuto(){ if(state.depth>=RE-1) state.depth=0; state.auto=true; autoBtn.textContent="⏸ 暂停探测"; autoLast=0; autoRAF=requestAnimationFrame(autoTick); }
+  function stopAuto(){ state.auto=false; if(autoRAF) cancelAnimationFrame(autoRAF); autoRAF=null; autoBtn.textContent="▶ 自动探测"; }
+  function autoTick(ts){
+    if(!state.auto) return; if(!autoLast) autoLast=ts;
+    var dt=(ts-autoLast)/1000; autoLast=ts;
+    state.depth += 320*dt; // 约20秒扫完
+    if(state.depth>=RE){ state.depth=RE; update(); stopAuto(); return; }
+    update(); autoRAF=requestAnimationFrame(autoTick);
   }
 
-  /* 圈层卡片 */
+  // 图层开关
+  var swBox=document.getElementById("switches");
+  [["cont","不连续面标注"],["asth","软流层"]].forEach(function(s){
+    var lab=document.createElement("label"); lab.className="sw";
+    var cb=document.createElement("input"); cb.type="checkbox"; cb.checked=state.show[s[0]];
+    cb.addEventListener("change",function(){ state.show[s[0]]=cb.checked; drawEarth(); });
+    lab.appendChild(cb); lab.appendChild(document.createTextNode(s[1])); swBox.appendChild(lab);
+  });
+
+  // 圈层卡片
   var cardBox=document.getElementById("layerCards");
   function renderLayers(){
     cardBox.innerHTML="";
     LAYERS.forEach(function(L,i){
-      var card=document.createElement("div");
-      card.className="lcard"+(state.hiLayer===i?" on":"");
+      var card=document.createElement("div"); card.className="lcard"+(state.hiLayer===i?" on":"");
       card.style.setProperty("--c",L.c);
-      card.innerHTML='<div class="badge"></div>'+
-        '<h3>'+L.name+' <em>'+L.en+'</em></h3>'+
-        '<div class="rng">'+L.rng+'</div>'+
-        '<p>'+L.desc+'</p>';
-      card.addEventListener("click",function(){
-        state.hiLayer = (state.hiLayer===i? null : i);
-        if(state.hiLayer!=null) state.depth=(L.from+L.to)/2;
-        update(); renderLayers();
-      });
+      card.innerHTML='<div class="badge"></div><h3>'+L.name+' <em>'+L.en+'</em></h3><div class="rng">'+L.rng+'</div><p>'+L.desc+'</p>';
+      card.addEventListener("click",function(){ stopAuto(); state.hiLayer=(state.hiLayer===i?null:i); if(state.hiLayer!=null) state.depth=(L.from+L.to)/2; update(); renderLayers(); });
       cardBox.appendChild(card);
     });
   }
+  // 浅部细部条
+  var strataBox=document.getElementById("strata");
+  function renderFine(){
+    strataBox.innerHTML="";
+    FINE.forEach(function(f){
+      var d=document.createElement("div"); d.className="srow"; d.dataset.top=f.top; d.dataset.bot=f.bot;
+      d.style.background=f.c; d.style.color=f.dark?"#0a0e18":"#e9eefb";
+      d.innerHTML='<span class="nm">'+f.nm+'</span><span class="dp">'+f.dp+'</span>';
+      strataBox.appendChild(d);
+    });
+  }
+  function updateFineActive(d){
+    var rows=strataBox.querySelectorAll(".srow");
+    for(var i=0;i<rows.length;i++){ var t=+rows[i].dataset.top, b=+rows[i].dataset.bot;
+      rows[i].classList.toggle("on", d>=t && d<=(i===rows.length-1?99999:b)); }
+  }
 
-  /* ============ 初始化 ============ */
-  mkStars();
-  renderLayers();
+  /* ---------- 初始化 ---------- */
+  renderLayers(); renderFine();
   resizeEarth(); resizeWave(); update();
   window.addEventListener("resize",function(){ resizeEarth(); resizeWave(); });
-  setInterval(function(){ drawEarth(); }, 60); // 星空/脉冲动画
-
-  // 键盘微调
+  setInterval(function(){ if(!state.auto) drawEarth(); }, 90);
   document.addEventListener("keydown",function(e){
-    if(e.key==="ArrowUp"||e.key==="ArrowRight"){ state.depth=Math.max(0,state.depth- (e.shiftKey?100:10)); update(); e.preventDefault(); }
-    if(e.key==="ArrowDown"||e.key==="ArrowLeft"){ state.depth=Math.min(RE,state.depth+ (e.shiftKey?100:10)); update(); e.preventDefault(); }
+    if(e.key==="ArrowUp"||e.key==="ArrowRight"){ stopAuto(); state.depth=Math.max(0,state.depth-(e.shiftKey?100:10)); update(); e.preventDefault(); }
+    if(e.key==="ArrowDown"||e.key==="ArrowLeft"){ stopAuto(); state.depth=Math.min(RE,state.depth+(e.shiftKey?100:10)); update(); e.preventDefault(); }
   });
 })();
 </script>
