@@ -1,0 +1,1294 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=3.0">
+<title>函数图像实验室 · Function Grapher Lab</title>
+<style>
+  :root{
+    --bg:#0d1117; --panel:#161b22; --panel2:#1c222b; --border:#262d38;
+    --text:#e6edf3; --muted:#8b949e; --muted2:#6e7681;
+    --accent:#58a6ff; --accent2:#3fb950; --warn:#d29922; --danger:#f85149;
+    --grid:#182029; --grid-strong:#222c38; --axis:#5b6673;
+    --shadow:0 8px 28px rgba(0,0,0,.45);
+    --radius:12px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:var(--bg); color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    font-size:14px; line-height:1.5; overflow:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+  ::-webkit-scrollbar{width:10px;height:10px}
+  ::-webkit-scrollbar-thumb{background:#2b333d;border-radius:6px;border:2px solid var(--panel)}
+  ::-webkit-scrollbar-thumb:hover{background:#3a444f}
+  ::-webkit-scrollbar-track{background:transparent}
+
+  #app{display:flex;flex-direction:column;height:100vh;height:100dvh}
+
+  /* ---------- header ---------- */
+  header{
+    display:flex;align-items:center;gap:14px;
+    padding:10px 16px;background:var(--panel);border-bottom:1px solid var(--border);
+    flex:0 0 auto;z-index:20;
+  }
+  .brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:15px;white-space:nowrap}
+  .brand .dot{
+    width:26px;height:26px;border-radius:8px;display:grid;place-items:center;
+    background:linear-gradient(135deg,#1f6feb,#8957e5);color:#fff;font-size:15px;font-weight:800;
+    box-shadow:0 0 18px rgba(88,166,255,.35);
+  }
+  .brand small{display:block;font-weight:400;font-size:10px;color:var(--muted2);letter-spacing:.5px}
+  .spacer{flex:1}
+  .hbtn{
+    display:inline-flex;align-items:center;gap:6px;background:var(--panel2);border:1px solid var(--border);
+    color:var(--text);padding:7px 12px;border-radius:9px;cursor:pointer;font-size:13px;
+    transition:.15s;white-space:nowrap;
+  }
+  .hbtn:hover{border-color:#3b4552;background:#222a34}
+  .hbtn.primary{background:linear-gradient(135deg,#1f6feb,#388bfd);border-color:#388bfd;color:#fff;font-weight:600}
+  .hbtn.primary:hover{filter:brightness(1.1)}
+  .hbtn svg{width:15px;height:15px;display:block}
+
+  /* ---------- layout ---------- */
+  #main{flex:1;display:flex;min-height:0;position:relative}
+  #side{
+    width:340px;flex:0 0 340px;background:var(--panel);border-right:1px solid var(--border);
+    display:flex;flex-direction:column;min-height:0;transition:margin-left .25s;
+  }
+  #side.collapsed{margin-left:-340px}
+  #stage{flex:1;position:relative;min-width:0;background:var(--bg);display:flex;flex-direction:column}
+  #canvasWrap{flex:1;position:relative;min-height:0;overflow:hidden;cursor:grab}
+  #canvasWrap.dragging{cursor:grabbing}
+  #cv{display:block;width:100%;height:100%;touch-action:none}
+
+  /* ---------- side panel ---------- */
+  .sec{padding:12px 14px;border-bottom:1px solid var(--border)}
+  .sec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+  .sec-title{font-size:12px;font-weight:700;letter-spacing:.6px;color:var(--muted);text-transform:uppercase}
+  .mini{font-size:11px;color:var(--muted2)}
+  .iconbtn{
+    background:transparent;border:1px solid var(--border);color:var(--muted);width:26px;height:26px;
+    border-radius:7px;cursor:pointer;display:grid;place-items:center;transition:.15s;flex:0 0 auto;
+  }
+  .iconbtn:hover{color:var(--text);border-color:#3b4552;background:#222a34}
+  .iconbtn.danger:hover{color:var(--danger);border-color:#5d2b2b;background:#2a1b1b}
+  .iconbtn svg{width:14px;height:14px}
+
+  /* function row */
+  .fnrow{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+  .fnrow .swatch{width:14px;height:14px;border-radius:50%;flex:0 0 auto;box-shadow:0 0 8px currentColor}
+  .fnrow input.fexpr{
+    flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);
+    padding:7px 9px;border-radius:8px;font-family:"SF Mono",ui-monospace,Consolas,monospace;font-size:13px;
+    min-width:0;
+  }
+  .fnrow input.fexpr:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 2px rgba(88,166,255,.18)}
+  .fnrow input.fexpr.err{border-color:var(--danger)}
+  .fnrow .eye{cursor:pointer;color:var(--muted);flex:0 0 auto;display:grid;place-items:center;width:20px}
+  .fnrow .eye svg{width:15px;height:15px}
+
+  /* param card */
+  #paramList{overflow-y:auto;flex:1;min-height:0}
+  .pcard{
+    background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:10px 11px;margin-bottom:9px;
+  }
+  .pcard-top{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+  .pname{
+    font-family:"SF Mono",ui-monospace,Consolas,monospace;font-size:14px;font-weight:700;color:var(--accent);
+    width:22px;text-align:center;
+  }
+  .pval{
+    flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:5px 8px;border-radius:7px;
+    font-family:"SF Mono",ui-monospace,Consolas,monospace;font-size:13px;text-align:right;min-width:0;
+  }
+  .pval:focus{outline:none;border-color:var(--accent)}
+  .pmode{
+    background:var(--bg);border:1px solid var(--border);color:var(--muted);border-radius:7px;padding:5px 4px;
+    font-size:12px;cursor:pointer;
+  }
+  .pmode:focus{outline:none;border-color:var(--accent)}
+  input[type=range]{
+    -webkit-appearance:none;appearance:none;width:100%;height:22px;background:transparent;cursor:pointer;display:block;
+  }
+  input[type=range]::-webkit-slider-runnable-track{height:5px;border-radius:4px;background:#2b333d}
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--accent);
+    margin-top:-6px;box-shadow:0 0 8px rgba(88,166,255,.6);border:2px solid #0d1117;
+  }
+  input[type=range]::-moz-range-track{height:5px;border-radius:4px;background:#2b333d}
+  input[type=range]::-moz-range-thumb{width:16px;height:16px;border:2px solid #0d1117;border-radius:50%;background:var(--accent)}
+  input[type=range].exp::-webkit-slider-thumb{background:#a371f7;box-shadow:0 0 8px rgba(163,113,247,.6)}
+  input[type=range].exp::-moz-range-thumb{background:#a371f7}
+  input[type=range].custom::-webkit-slider-thumb{background:#db61a2;box-shadow:0 0 8px rgba(219,97,162,.6)}
+  input[type=range].custom::-moz-range-thumb{background:#db61a2}
+  .pmeta{display:flex;align-items:center;gap:6px;margin-top:7px;font-size:11px;color:var(--muted2)}
+  .pmeta input{
+    width:60px;background:var(--bg);border:1px solid var(--border);color:var(--muted);border-radius:6px;
+    padding:3px 6px;font-size:11px;font-family:"SF Mono",monospace;text-align:center;
+  }
+  .pmeta input:focus{outline:none;border-color:var(--accent);color:var(--text)}
+  .pmeta .lbl{white-space:nowrap}
+  .pcustom{display:flex;align-items:center;gap:6px;margin-top:7px}
+  .pcustom input{
+    flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:7px;
+    padding:5px 8px;font-family:"SF Mono",monospace;font-size:12px;min-width:0;
+  }
+  .pcustom input:focus{outline:none;border-color:#db61a2}
+  .pcustom .t{color:var(--muted2);font-family:"SF Mono",monospace;font-size:12px}
+  .pmode-hint{font-size:10.5px;color:var(--muted2);margin-top:5px;line-height:1.4}
+  .pmode-hint b{color:var(--muted)}
+
+  /* ---------- stage toolbar / zoom ---------- */
+  #toolbar{
+    position:absolute;top:10px;left:10px;display:flex;gap:6px;z-index:5;
+    background:rgba(22,27,34,.86);backdrop-filter:blur(8px);border:1px solid var(--border);
+    padding:6px;border-radius:11px;box-shadow:var(--shadow);
+  }
+  #toolbar .iconbtn{width:30px;height:30px}
+  #toolbar .iconbtn.on{color:var(--accent);border-color:#26436b;background:#132235}
+  .coord{
+    position:absolute;bottom:10px;left:12px;z-index:5;font-family:"SF Mono",monospace;font-size:11.5px;
+    color:var(--muted);background:rgba(22,27,34,.8);padding:4px 9px;border-radius:8px;border:1px solid var(--border);
+    pointer-events:none;
+  }
+  #zoombar{
+    position:absolute;right:14px;top:50%;transform:translateY(-50%);z-index:5;
+    display:flex;flex-direction:column;align-items:center;gap:8px;
+    background:rgba(22,27,34,.86);backdrop-filter:blur(8px);border:1px solid var(--border);
+    padding:12px 10px;border-radius:12px;box-shadow:var(--shadow);
+  }
+  #zoombar .zlabel{font-size:10px;color:var(--muted2);writing-mode:vertical-lr;letter-spacing:1px}
+  #zoomSlider{
+    -webkit-appearance:slider-vertical;writing-mode:vertical-lr;direction:rtl;
+    width:22px;height:170px;background:transparent;cursor:pointer;
+  }
+  #zoomSlider::-webkit-slider-runnable-track{width:5px;border-radius:4px;background:#2b333d}
+  #zoomSlider::-webkit-slider-thumb{
+    -webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--accent);
+    margin-left:-5.5px;box-shadow:0 0 8px rgba(88,166,255,.6);border:2px solid #0d1117;
+  }
+  #zoomVal{font-family:"SF Mono",monospace;font-size:11px;color:var(--muted)}
+
+  /* ---------- AI panel ---------- */
+  #ai{
+    width:400px;flex:0 0 400px;background:var(--panel);border-left:1px solid var(--border);
+    display:flex;flex-direction:column;min-height:0;transition:margin-right .25s;
+  }
+  #ai.collapsed{margin-right:-400px}
+  #ai .aihead{padding:12px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:9px}
+  #ai .aihead .avatar{
+    width:28px;height:28px;border-radius:9px;display:grid;place-items:center;font-size:15px;
+    background:linear-gradient(135deg,#8957e5,#1f6feb);flex:0 0 auto;
+  }
+  #ai .aihead .t1{font-weight:700;font-size:14px}
+  #ai .aihead .t2{font-size:11px;color:var(--muted2)}
+  #msgs{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:12px;min-height:0}
+  .msg{display:flex;flex-direction:column;max-width:100%}
+  .msg .bubble{
+    padding:10px 13px;border-radius:12px;font-size:13.5px;line-height:1.62;word-break:break-word;
+    white-space:pre-wrap;
+  }
+  .msg.me{align-items:flex-end}
+  .msg.me .bubble{background:linear-gradient(135deg,#1f6feb,#388bfd);color:#fff;border-bottom-right-radius:4px}
+  .msg.ai .bubble{background:var(--panel2);border:1px solid var(--border);border-bottom-left-radius:4px}
+  .msg .bubble b{color:#fff}
+  .msg.ai .bubble b{color:var(--accent)}
+  .msg .bubble code{background:#0b0f14;padding:1px 5px;border-radius:4px;font-family:"SF Mono",monospace;font-size:12.5px}
+  .msg .bubble pre{
+    background:#0b0f14;border:1px solid var(--border);border-radius:8px;padding:9px 11px;overflow-x:auto;
+    margin:6px 0;font-family:"SF Mono",monospace;font-size:12.5px;white-space:pre;
+  }
+  .applybtn{
+    align-self:flex-start;margin-top:7px;background:#132235;border:1px solid #26436b;color:var(--accent);
+    padding:5px 11px;border-radius:8px;font-size:12px;cursor:pointer;transition:.15s;
+  }
+  .applybtn:hover{background:#18304d}
+  .aifoot{padding:12px 14px;border-top:1px solid var(--border)}
+  #aiInput{
+    width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:10px;
+    padding:10px 12px;font-size:13.5px;resize:none;max-height:130px;min-height:44px;font-family:inherit;line-height:1.5;
+  }
+  #aiInput:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 2px rgba(88,166,255,.16)}
+  .airow{display:flex;gap:8px;align-items:center;margin-top:9px}
+  .chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:9px}
+  .chip{
+    background:var(--panel2);border:1px solid var(--border);color:var(--muted);border-radius:20px;
+    padding:5px 11px;font-size:12px;cursor:pointer;transition:.15s;white-space:nowrap;
+  }
+  .chip:hover{color:var(--text);border-color:#3b4552;background:#222a34}
+  .sendbtn{
+    background:linear-gradient(135deg,#8957e5,#1f6feb);border:none;color:#fff;width:38px;height:38px;
+    border-radius:10px;cursor:pointer;display:grid;place-items:center;flex:0 0 auto;transition:.15s;
+  }
+  .sendbtn:hover{filter:brightness(1.12)}
+  .sendbtn:disabled{opacity:.45;cursor:not-allowed;filter:none}
+  .sendbtn svg{width:17px;height:17px}
+  .typing{display:inline-flex;gap:4px;align-items:center;height:16px}
+  .typing i{width:5px;height:5px;border-radius:50%;background:var(--muted);animation:blink 1.2s infinite}
+  .typing i:nth-child(2){animation-delay:.2s}.typing i:nth-child(3){animation-delay:.4s}
+  @keyframes blink{0%,60%,100%{opacity:.25}30%{opacity:1}}
+
+  /* ---------- settings / modal ---------- */
+  .modal-bg{
+    position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(3px);z-index:100;
+    display:none;place-items:center;padding:20px;
+  }
+  .modal-bg.show{display:grid}
+  .modal{
+    background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);width:100%;max-width:460px;
+    box-shadow:var(--shadow);overflow:hidden;max-height:90vh;display:flex;flex-direction:column;
+  }
+  .modal h3{padding:15px 18px;border-bottom:1px solid var(--border);font-size:15px;display:flex;align-items:center;gap:8px}
+  .modal .body{padding:18px;overflow-y:auto}
+  .field{margin-bottom:14px}
+  .field label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px;font-weight:600}
+  .field input,.field select{
+    width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:9px;
+    padding:9px 11px;font-size:13.5px;font-family:inherit;
+  }
+  .field input:focus,.field select:focus{outline:none;border-color:var(--accent)}
+  .field .hint{font-size:11px;color:var(--muted2);margin-top:5px;line-height:1.5}
+  .modal .foot{padding:14px 18px;border-top:1px solid var(--border);display:flex;gap:9px;justify-content:flex-end}
+  .toast{
+    position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);z-index:200;
+    background:#1f2733;border:1px solid var(--border);color:var(--text);padding:10px 18px;border-radius:10px;
+    box-shadow:var(--shadow);font-size:13px;opacity:0;transition:.25s;pointer-events:none;max-width:90vw;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  .toast.err{border-color:#5d2b2b;background:#2a1b1b}
+  .toast.ok{border-color:#2b5d38;background:#152a1e}
+
+  .empty{color:var(--muted2);font-size:12.5px;text-align:center;padding:20px 10px;line-height:1.7}
+  kbd{background:var(--bg);border:1px solid var(--border);border-bottom-width:2px;border-radius:5px;padding:1px 6px;font-size:11px;font-family:inherit}
+
+  #sideToggle{display:none}
+  @media (max-width:900px){
+    #side{position:absolute;inset:0 auto 0 0;z-index:30;box-shadow:var(--shadow)}
+    #side.collapsed{margin-left:-340px}
+    #ai{position:absolute;inset:0 0 0 auto;z-index:30;box-shadow:var(--shadow);width:min(400px,92vw);flex-basis:auto}
+    #ai.collapsed{margin-right:calc(-1 * min(400px,92vw))}
+    #sideToggle{display:inline-flex}
+    .brand small{display:none}
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <button class="hbtn" id="sideToggle" title="参数面板">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+    </button>
+    <div class="brand">
+      <div class="dot">ƒ</div>
+      <div>函数图像实验室<small>FUNCTION GRAPHER LAB</small></div>
+    </div>
+    <div class="spacer"></div>
+    <button class="hbtn" id="resetBtn" title="重置视图">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5"/></svg>
+      <span>重置视图</span>
+    </button>
+    <button class="hbtn primary" id="aiToggle">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l1.8 4.7L18.5 9l-4.7 1.8L12 15l-1.8-4.2L5.5 9l4.7-1.3L12 3zM18 15l.9 2.3 2.3.7-2.3.9-.9 2.3-.9-2.3-2.3-.9 2.3-.7.9-2.3z"/></svg>
+      <span>AI 助手</span>
+    </button>
+  </header>
+
+  <div id="main">
+    <aside id="side">
+      <div class="sec">
+        <div class="sec-head">
+          <div class="sec-title">函数</div>
+          <button class="iconbtn" id="addFn" title="添加函数">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>
+          </button>
+        </div>
+        <div id="fnList"></div>
+        <div class="mini" style="margin-top:2px">自变量为 <b>x</b>；可用 sin / cos / exp / log / sqrt / abs / ^ 等。</div>
+      </div>
+      <div class="sec" style="padding-bottom:6px;border-bottom:none">
+        <div class="sec-head" style="margin-bottom:6px">
+          <div class="sec-title">参数</div>
+          <div class="mini" id="paramCount"></div>
+        </div>
+      </div>
+      <div id="paramList"><div class="empty">在函数中输入形如 a·sin(b·x+c)+d 的表达式，<br>含字母的参数会自动出现在这里。</div></div>
+    </aside>
+
+    <section id="stage">
+      <div id="canvasWrap">
+        <canvas id="cv"></canvas>
+        <div id="toolbar">
+          <button class="iconbtn on" id="btnGrid" title="网格">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg>
+          </button>
+          <button class="iconbtn on" id="btnTicks" title="刻度">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 3v18M4 7h4M4 12h2M4 17h4M18 3v18M16 7h4M18 12h2M18 17h4"/></svg>
+          </button>
+          <button class="iconbtn on" id="btnDeriv" title="切线/导数">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19c4 0 6-14 16-14"/><path d="M4 19l16-8" stroke-dasharray="3 3"/></svg>
+          </button>
+          <button class="iconbtn" id="btnZoomIn" title="放大">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M11 8v6M8 11h6M20 20l-3.5-3.5"/></svg>
+          </button>
+          <button class="iconbtn" id="btnZoomOut" title="缩小">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M8 11h6M20 20l-3.5-3.5"/></svg>
+          </button>
+        </div>
+        <div id="zoombar">
+          <div class="zlabel">缩放</div>
+          <input type="range" id="zoomSlider" min="0" max="1000" value="500">
+          <div id="zoomVal">1.0×</div>
+        </div>
+        <div class="coord" id="coord">x: 0.00 &nbsp; y: 0.00</div>
+      </div>
+    </section>
+
+    <aside id="ai" class="collapsed">
+      <div class="aihead">
+        <div class="avatar">🤖</div>
+        <div style="flex:1">
+          <div class="t1">AI 数学助手</div>
+          <div class="t2" id="aiStatus">未配置 API — 点击 ⚙ 设置</div>
+        </div>
+        <button class="iconbtn" id="aiSettings" title="设置 API">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3h.1a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9v.1a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+        </button>
+        <button class="iconbtn" id="aiClose" title="关闭">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+      </div>
+      <div id="msgs"></div>
+      <div class="aifoot">
+        <div class="chips" id="aiChips">
+          <div class="chip" data-q="解释当前函数的主要性质（定义域、值域、周期、单调性、渐近线）">分析当前函数</div>
+          <div class="chip" data-q="给出一个能展示振幅、频率、相位变化的含参正弦函数表达式">含参正弦函数</div>
+          <div class="chip" data-q="指数模式的滑动条是怎么映射参数值的？">指数模式原理</div>
+        </div>
+        <textarea id="aiInput" rows="1" placeholder="问问我关于函数与图像的问题…（Enter 发送，Shift+Enter 换行）"></textarea>
+        <div class="airow">
+          <div class="mini" style="flex:1">Enter 发送 · 可让 AI 生成表达式并一键应用</div>
+          <button class="sendbtn" id="aiSend" title="发送">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12l16-8-6 8 6 8-16-8z"/></svg>
+          </button>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<div class="modal-bg" id="setModal">
+  <div class="modal">
+    <h3>⚙ AI 助手设置</h3>
+    <div class="body">
+      <div class="field">
+        <label>API 地址（OpenAI 兼容）</label>
+        <input id="cfgBase" placeholder="https://api.deepseek.com" autocomplete="off">
+        <div class="hint">默认 DeepSeek 官方接口（已支持浏览器直连）。也可填入其它 OpenAI 兼容服务。</div>
+      </div>
+      <div class="field">
+        <label>API Key</label>
+        <input id="cfgKey" type="password" placeholder="sk-..." autocomplete="off">
+        <div class="hint">Key 仅保存在你这台设备的浏览器本地（localStorage），不会上传到任何第三方服务器。留空则 AI 助手使用内置的离线问答。</div>
+      </div>
+      <div class="field">
+        <label>模型</label>
+        <input id="cfgModel" placeholder="deepseek-chat" autocomplete="off">
+      </div>
+    </div>
+    <div class="foot">
+      <button class="hbtn" id="cfgCancel">取消</button>
+      <button class="hbtn primary" id="cfgSave">保存</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  'use strict';
+
+  /* ============================================================
+   *  0. 基础工具
+   * ============================================================ */
+  const $ = (s, r) => (r||document).querySelector(s);
+  const $$ = (s, r) => Array.from((r||document).querySelectorAll(s));
+  const clamp = (v,a,b) => v<a?a:(v>b?b:v);
+  const MATH_NAMES = Object.getOwnPropertyNames(Math).filter(k => typeof Math[k] === 'number' || typeof Math[k] === 'function');
+  const MATH_VALS = MATH_NAMES.map(k => Math[k]);
+  const RESERVED = new Set(['x','t','e','E','pi','PI'].concat(MATH_NAMES));
+
+  let toastTimer = null;
+  function toast(msg, kind){
+    const el = $('#toast');
+    el.textContent = msg;
+    el.className = 'toast show' + (kind ? ' ' + kind : '');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { el.className = 'toast'; }, 2600);
+  }
+  function fmt(v, sig){
+    if (!isFinite(v)) return (v>0?'∞':(v<0?'-∞':'NaN'));
+    if (v === 0) return '0';
+    const a = Math.abs(v);
+    if (a >= 1e5 || a < 1e-4) return v.toExponential(2).replace('e+','e');
+    let s = v.toPrecision(sig||4);
+    if (s.indexOf('.') >= 0) s = s.replace(/0+$/,'').replace(/\.$/,'');
+    return parseFloat(s).toString();
+  }
+
+  /* ============================================================
+   *  1. 表达式引擎
+   * ============================================================ */
+  // 预处理：^ -> **，补隐式乘法
+  function preprocess(expr){
+    let s = String(expr || '').trim();
+    if (!s) return 'NaN';
+    s = s.replace(/×/g,'*').replace(/÷/g,'/').replace(/−/g,'-').replace(/√/g,'sqrt');
+    s = s.replace(/\^/g, '**');
+    // 数字后接字母或左括号 -> 乘
+    s = s.replace(/(\d)\s*([a-zA-Z(])/g, '$1*$2');
+    // 右括号后接字母/数字/左括号 -> 乘
+    s = s.replace(/\)\s*([a-zA-Z0-9(])/g, ')*$1');
+    // π -> PI
+    s = s.replace(/π/g, 'PI');
+    return s;
+  }
+
+  const compileCache = new Map();
+  function compileExpr(expr, paramNames){
+    const key = expr + '|' + paramNames.join(',');
+    if (compileCache.has(key)) return compileCache.get(key);
+    let fn = null;
+    try {
+      const body = '"use strict";return (' + preprocess(expr) + ');';
+      fn = new Function('x', ...paramNames, ...MATH_NAMES, body);
+    } catch(e){
+      fn = null;
+    }
+    const wrapped = fn ? ((x, pv) => {
+      try { return fn(x, ...pv, ...MATH_VALS); }
+      catch(e){ return NaN; }
+    }) : null;
+    compileCache.set(key, wrapped);
+    return wrapped;
+  }
+
+  const customCache = new Map();
+  function evalCustom(expr, t){
+    if (customCache.has(expr)) return customCache.get(expr)(t);
+    let f;
+    try {
+      f = new Function('t', ...MATH_NAMES, '"use strict";return (' + preprocess(expr) + ');');
+    } catch(e){
+      f = () => NaN;
+    }
+    const w = (tt) => { try { return f(tt, ...MATH_VALS); } catch(e){ return NaN; } };
+    customCache.set(expr, w);
+    return w(t);
+  }
+
+  // 从若干表达式里提取参数名（排除 x、内置）
+  function extractParams(exprs){
+    const set = new Set();
+    for (const ex of exprs){
+      const ids = String(ex||'').match(/[A-Za-z_][A-Za-z0-9_]*/g) || [];
+      for (const id of ids){
+        if (RESERVED.has(id)) continue;
+        set.add(id);
+      }
+    }
+    return Array.from(set).sort();
+  }
+
+  /* ============================================================
+   *  2. 参数模型 + 三种映射模式
+   * ============================================================ */
+  // 滑块位置 t∈[0,1] -> 参数值
+  function tToValue(p, t){
+    t = clamp(t, 0, 1);
+    const a = p.min, b = p.max;
+    if (p.mode === 'exp'){
+      if ((a > 0 && b > 0) || (a < 0 && b < 0)) return a * Math.pow(b/a, t);
+      return a + t*(b-a);
+    }
+    if (p.mode === 'custom'){
+      const v = evalCustom(p.customExpr || 't', t);
+      if (isFinite(v)) return v;
+      return a + t*(b-a);
+    }
+    return a + t*(b-a);
+  }
+  // 参数值 -> 滑块位置 t（近似反解）
+  function valueToT(p, v){
+    const a = p.min, b = p.max;
+    if (p.mode === 'exp' && ((a>0&&b>0)||(a<0&&b<0)) && v!==0 && (v>0)===(a>0)){
+      const t = Math.log(v/a) / Math.log(b/a);
+      if (isFinite(t)) return clamp(t, 0, 1);
+    }
+    if (p.mode === 'custom'){
+      // 采样搜索最接近的 t
+      let best = 0.5, bestErr = Infinity;
+      for (let i=0;i<=400;i++){
+        const tt = i/400, val = tToValue(p, tt);
+        const err = Math.abs(val - v);
+        if (err < bestErr && isFinite(err)){ bestErr = err; best = tt; }
+      }
+      return best;
+    }
+    if (b === a) return 0.5;
+    return clamp((v-a)/(b-a), 0, 1);
+  }
+
+  const state = {
+    funcs: [],
+    params: {},          // name -> param
+    view: { cx: 0, cy: 0, scale: 70 },
+    showGrid: true, showTicks: true, showDeriv: false,
+    colors: ['#58a6ff','#3fb950','#f0883e','#db61a2','#a371f7','#39c5cf','#e3b341','#ff7b72'],
+  };
+
+  function newParam(name){
+    return { name: name, value: 1, min: -5, max: 5, mode: 'linear', customExpr: 't', t: 0.5 };
+  }
+  const DEFAULT_RANGES = { c: [-3.1416, 3.1416], p: [-5, 5], s: [0.1, 5], k: [-3, 3] };
+  function makeParamWithValue(name, value){
+    const p = newParam(name);
+    if (DEFAULT_RANGES[name]) { p.min = DEFAULT_RANGES[name][0]; p.max = DEFAULT_RANGES[name][1]; }
+    p.value = value;
+    p.t = valueToT(p, value);
+    return p;
+  }
+
+  /* ============================================================
+   *  3. 数据同步
+   * ============================================================ */
+  let fnSeq = 1;
+  function addFunc(expr, color, silent){
+    state.funcs.push({
+      id: 'f' + (fnSeq++),
+      expr: expr,
+      color: color || state.colors[(state.funcs.length) % state.colors.length],
+      visible: true,
+    });
+    rebuildParams(true);
+    if (!silent){ renderFnList(); renderParams(); }
+  }
+
+  // 根据当前所有函数表达式重建参数集合（保留已有参数的当前值/设置）
+  function rebuildParams(keepValues){
+    const names = extractParams(state.funcs.map(f => f.expr));
+    const next = {};
+    for (const n of names){
+      if (keepValues && state.params[n]) { next[n] = state.params[n]; }
+      else if (state.params[n]) { next[n] = state.params[n]; }
+      else { next[n] = makeParamWithValue(n, 1); }
+    }
+    state.params = next;
+  }
+
+  function visibleFuncs(){ return state.funcs.filter(f => f.visible); }
+
+  function anyCompileError(){
+    const names = Object.keys(state.params);
+    for (const f of state.funcs){
+      if (!f.expr.trim()) continue;
+      if (!compileExpr(f.expr, names)) return true;
+    }
+    return false;
+  }
+
+  /* ============================================================
+   *  4. 渲染
+   * ============================================================ */
+  const cv = $('#cv');
+  const ctx = cv.getContext('2d');
+  let W = 0, H = 0, DPR = 1;
+
+  function resize(){
+    const wrap = $('#canvasWrap');
+    DPR = Math.min(window.devicePixelRatio || 1, 2.5);
+    W = wrap.clientWidth; H = wrap.clientHeight;
+    cv.width = Math.round(W * DPR);
+    cv.height = Math.round(H * DPR);
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+    draw();
+  }
+
+  function w2sx(x){ const v = state.view; return W/2 + (x - v.cx) * v.scale; }
+  function w2sy(y){ const v = state.view; return H/2 - (y - v.cy) * v.scale; }
+  function sx2w(sx){ const v = state.view; return v.cx + (sx - W/2) / v.scale; }
+  function sy2w(sy){ const v = state.view; return v.cy - (sy - H/2) / v.scale; }
+
+  function niceStep(scale){
+    const raw = 84 / scale;
+    const mag = Math.pow(10, Math.floor(Math.log10(raw)));
+    const n = raw / mag;
+    let m = n < 1.5 ? 1 : n < 3 ? 2 : n < 7 ? 5 : 10;
+    return m * mag;
+  }
+
+  function draw(){
+    if (!W || !H) return;
+    ctx.clearRect(0,0,W,H);
+    // 背景
+    ctx.fillStyle = '#0d1117';
+    ctx.fillRect(0,0,W,H);
+
+    const v = state.view;
+    const step = niceStep(v.scale);
+    const xMin = sx2w(0), xMax = sx2w(W);
+    const yMax = sy2w(0), yMin = sy2w(H);
+
+    // 网格
+    if (state.showGrid){
+      ctx.lineWidth = 1;
+      // 次网格（step/5）
+      const sub = step/5;
+      if (v.scale*sub > 12){
+        ctx.strokeStyle = '#11171f';
+        ctx.beginPath();
+        for (let x = Math.ceil(xMin/sub)*sub; x <= xMax; x += sub){ const sx = Math.round(w2sx(x))+0.5; ctx.moveTo(sx,0); ctx.lineTo(sx,H); }
+        for (let y = Math.ceil(yMin/sub)*sub; y <= yMax; y += sub){ const sy = Math.round(w2sy(y))+0.5; ctx.moveTo(0,sy); ctx.lineTo(W,sy); }
+        ctx.stroke();
+      }
+      ctx.strokeStyle = 'var(--grid)';
+      ctx.strokeStyle = '#182029';
+      ctx.beginPath();
+      for (let x = Math.ceil(xMin/step)*step; x <= xMax; x += step){ const sx = Math.round(w2sx(x))+0.5; ctx.moveTo(sx,0); ctx.lineTo(sx,H); }
+      for (let y = Math.ceil(yMin/step)*step; y <= yMax; y += step){ const sy = Math.round(w2sy(y))+0.5; ctx.moveTo(0,sy); ctx.lineTo(W,sy); }
+      ctx.stroke();
+    }
+
+    // 坐标轴
+    const ax = clamp(w2sy(0), -1, H+1);
+    const ay = clamp(w2sx(0), -1, W+1);
+    ctx.strokeStyle = '#5b6673';
+    ctx.lineWidth = 1.4;
+    ctx.beginPath();
+    if (ax >= 0 && ax <= H){ ctx.moveTo(0, Math.round(ax)+0.5); ctx.lineTo(W, Math.round(ax)+0.5); }
+    if (ay >= 0 && ay <= W){ ctx.moveTo(Math.round(ay)+0.5, 0); ctx.lineTo(Math.round(ay)+0.5, H); }
+    ctx.stroke();
+
+    // 刻度
+    if (state.showTicks){
+      ctx.fillStyle = '#8b949e';
+      ctx.font = '11px -apple-system,"SF Mono",monospace';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+      for (let x = Math.ceil(xMin/step)*step; x <= xMax; x += step){
+        if (Math.abs(x) < step/1000) continue;
+        const sx = w2sx(x);
+        if (sx < 12 || sx > W-12) continue;
+        const ty = clamp(ax, 0, H-16);
+        ctx.fillText(fmt(x), sx, ty + 5);
+      }
+      ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+      for (let y = Math.ceil(yMin/step)*step; y <= yMax; y += step){
+        if (Math.abs(y) < step/1000) continue;
+        const sy = w2sy(y);
+        if (sy < 12 || sy > H-12) continue;
+        const tx = clamp(ay, 22, W-4);
+        ctx.fillText(fmt(y), tx - 6, sy);
+      }
+      // 原点
+      if (ax>=0&&ax<=H&&ay>=0&&ay<=W){ ctx.textAlign='right'; ctx.textBaseline='top'; ctx.fillText('O', ay-5, ax+5); }
+    }
+
+    // 曲线
+    const names = Object.keys(state.params);
+    const pv = names.map(n => state.params[n].value);
+    for (const f of state.funcs){
+      if (!f.visible || !f.expr.trim()) continue;
+      const fn = compileExpr(f.expr, names);
+      if (!fn) continue;
+      ctx.strokeStyle = f.color;
+      ctx.lineWidth = 2.2;
+      ctx.lineJoin = 'round';
+      ctx.beginPath();
+      let started = false, prevSy = 0;
+      for (let sx = 0; sx <= W; sx += 1){
+        const wx = sx2w(sx);
+        const wy = fn(wx, pv);
+        if (!isFinite(wy)){ started = false; continue; }
+        const sy = w2sy(wy);
+        if (!started){ ctx.moveTo(sx, sy); started = true; }
+        else {
+          // 断裂检测（渐近线）
+          if (Math.abs(sy - prevSy) > H*1.6){ ctx.moveTo(sx, sy); }
+          else { ctx.lineTo(sx, sy); }
+        }
+        prevSy = sy;
+        if (sy < -H*3 || sy > H*4) started = false;
+      }
+      ctx.stroke();
+    }
+
+    // 导数/切线（对第一条可见函数，在鼠标 x 处）
+    if (state.showDeriv){
+      drawDerivative(names, pv);
+    }
+  }
+
+  let mouseWX = 0;
+  function drawDerivative(names, pv){
+    const f = visibleFuncs()[0];
+    if (!f || !f.expr.trim()) return;
+    const fn = compileExpr(f.expr, names);
+    if (!fn) return;
+    const x0 = mouseWX;
+    const h = Math.max(1e-4, (sx2w(1) - sx2w(0)));
+    const y0 = fn(x0, pv);
+    if (!isFinite(y0)) return;
+    const k = (fn(x0+h, pv) - fn(x0-h, pv)) / (2*h);
+    if (!isFinite(k)) return;
+    const sx0 = w2sx(x0), sy0 = w2sy(y0);
+    ctx.save();
+    // 切线
+    const dx = (W/2) / state.view.scale;
+    const x1 = x0 - dx, x2 = x0 + dx;
+    ctx.strokeStyle = '#e3b341';
+    ctx.lineWidth = 1.6; ctx.setLineDash([6,4]);
+    ctx.beginPath();
+    ctx.moveTo(w2sx(x1), w2sy(y0 + k*(x1-x0)));
+    ctx.lineTo(w2sx(x2), w2sy(y0 + k*(x2-x0)));
+    ctx.stroke();
+    ctx.setLineDash([]);
+    // 点
+    ctx.fillStyle = '#e3b341';
+    ctx.beginPath(); ctx.arc(sx0, sy0, 4.5, 0, Math.PI*2); ctx.fill();
+    // 标签
+    ctx.font = '12px "SF Mono",monospace';
+    ctx.textAlign = 'left'; ctx.textBaseline = 'bottom';
+    const label = 'f(' + fmt(x0,3) + ')=' + fmt(y0,3) + "   f'=" + fmt(k,3);
+    const tw = ctx.measureText(label).width;
+    let lx = sx0 + 10, ly = sy0 - 8;
+    if (lx + tw > W-6) lx = sx0 - tw - 10;
+    ctx.fillStyle = 'rgba(22,27,34,.9)';
+    ctx.fillRect(lx-5, ly-15, tw+10, 19);
+    ctx.fillStyle = '#e3b341';
+    ctx.fillText(label, lx, ly);
+    ctx.restore();
+  }
+
+  /* ============================================================
+   *  5. 交互：拖动平移 / 滚轮缩放 / 缩放滑条
+   * ============================================================ */
+  const ZMIN = 4, ZMAX = 4000;
+  function setScale(s, anchorSx, anchorSy){
+    s = clamp(s, ZMIN, ZMAX);
+    const v = state.view;
+    if (anchorSx != null){
+      const wx = sx2w(anchorSx), wy = sy2w(anchorSy);
+      v.scale = s;
+      v.cx = wx - (anchorSx - W/2) / v.scale;
+      v.cy = wy + (anchorSy - H/2) / v.scale;
+    } else {
+      v.scale = s;
+    }
+    updateZoomUI();
+    draw();
+  }
+  function zoomLog(v){ return (v.scale - ZMIN) / (ZMAX - ZMIN); } // 用于滑条（近线性）
+  function updateZoomUI(){
+    const s = state.view.scale;
+    // 滑条用对数刻度更自然
+    const lo = Math.log(ZMIN), hi = Math.log(ZMAX);
+    $('#zoomSlider').value = Math.round((Math.log(clamp(s,ZMIN,ZMAX)) - lo) / (hi - lo) * 1000);
+    $('#zoomVal').textContent = (s/70).toFixed(2) + '×';
+  }
+  function sliderToScale(val){
+    const lo = Math.log(ZMIN), hi = Math.log(ZMAX);
+    return Math.exp(lo + (hi-lo) * (val/1000));
+  }
+
+  const wrap = $('#canvasWrap');
+  let dragging = false, lastX = 0, lastY = 0, moved = false;
+  wrap.addEventListener('pointerdown', e => {
+    if (e.target.closest('#toolbar') || e.target.closest('#zoombar')) return;
+    dragging = true; moved = false; lastX = e.clientX; lastY = e.clientY;
+    wrap.classList.add('dragging');
+    wrap.setPointerCapture(e.pointerId);
+  });
+  wrap.addEventListener('pointermove', e => {
+    const r = wrap.getBoundingClientRect();
+    const px = e.clientX - r.left, py = e.clientY - r.top;
+    $('#coord').textContent = 'x: ' + fmt(sx2w(px),4) + '   y: ' + fmt(sy2w(py),4);
+    mouseWX = sx2w(px);
+    if (dragging){
+      const dx = e.clientX - lastX, dy = e.clientY - lastY;
+      if (Math.abs(dx) > 1 || Math.abs(dy) > 1) moved = true;
+      state.view.cx -= dx / state.view.scale;
+      state.view.cy += dy / state.view.scale;
+      lastX = e.clientX; lastY = e.clientY;
+      draw();
+    } else if (state.showDeriv){
+      draw();
+    }
+  });
+  function endDrag(e){
+    if (!dragging) return;
+    dragging = false; wrap.classList.remove('dragging');
+    try { wrap.releasePointerCapture(e.pointerId); } catch(_){}
+  }
+  wrap.addEventListener('pointerup', endDrag);
+  wrap.addEventListener('pointercancel', endDrag);
+  wrap.addEventListener('pointerleave', () => { $('#coord').textContent = ''; });
+
+  wrap.addEventListener('wheel', e => {
+    e.preventDefault();
+    const r = wrap.getBoundingClientRect();
+    const factor = Math.exp(-e.deltaY * 0.0013);
+    setScale(state.view.scale * factor, e.clientX - r.left, e.clientY - r.top);
+  }, {passive:false});
+
+  // 双指捏合（触摸）
+  let pinch = null;
+  wrap.addEventListener('touchstart', e => {
+    if (e.touches.length === 2){
+      const r = wrap.getBoundingClientRect();
+      pinch = { d: dist2(e.touches), cx: (e.touches[0].clientX+e.touches[1].clientX)/2 - r.left, cy: (e.touches[0].clientY+e.touches[1].clientY)/2 - r.top, scale: state.view.scale };
+    }
+  }, {passive:true});
+  wrap.addEventListener('touchmove', e => {
+    if (e.touches.length === 2 && pinch){
+      e.preventDefault();
+      const d = dist2(e.touches);
+      setScale(pinch.scale * (d / pinch.d), pinch.cx, pinch.cy);
+    }
+  }, {passive:false});
+  wrap.addEventListener('touchend', () => { pinch = null; }, {passive:true});
+  function dist2(t){ const dx=t[0].clientX-t[1].clientX, dy=t[0].clientY-t[1].clientY; return Math.hypot(dx,dy); }
+
+  /* ============================================================
+   *  6. UI 构建
+   * ============================================================ */
+  function renderFnList(){
+    const box = $('#fnList');
+    box.innerHTML = '';
+    state.funcs.forEach(f => {
+      const row = document.createElement('div');
+      row.className = 'fnrow';
+      const err = f.expr.trim() && !compileExpr(f.expr, Object.keys(state.params));
+      row.innerHTML =
+        '<span class="swatch" style="background:'+f.color+';color:'+f.color+'"></span>' +
+        '<input class="fexpr'+(err?' err':'')+'" value="'+escapeAttr(f.expr)+'" placeholder="a*sin(b*x+c)+d" spellcheck="false">' +
+        '<span class="eye" title="显示/隐藏">'+eyeSvg(f.visible)+'</span>' +
+        '<button class="iconbtn danger" title="删除" style="width:24px;height:24px">' +
+          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>';
+      const inp = row.querySelector('.fexpr');
+      inp.addEventListener('input', () => {
+        f.expr = inp.value;
+        rebuildParams(true);
+        renderParams();
+        draw();
+        // 实时错误态
+        const bad = f.expr.trim() && !compileExpr(f.expr, Object.keys(state.params));
+        inp.classList.toggle('err', bad);
+      });
+      row.querySelector('.eye').addEventListener('click', () => {
+        f.visible = !f.visible;
+        row.querySelector('.eye').innerHTML = eyeSvg(f.visible);
+        draw();
+      });
+      row.querySelector('.iconbtn.danger').addEventListener('click', () => {
+        state.funcs = state.funcs.filter(x => x.id !== f.id);
+        rebuildParams(true);
+        renderFnList(); renderParams(); draw();
+      });
+      box.appendChild(row);
+    });
+  }
+  function eyeSvg(on){
+    return on
+      ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>'
+      : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.9 17.9A10.4 10.4 0 0 1 12 19c-7 0-11-7-11-7a18 18 0 0 1 5.1-5.9M9.9 4.2A9.8 9.8 0 0 1 12 4c7 0 11 8 11 8a18 18 0 0 1-2.2 3.3M1 1l22 22"/></svg>';
+  }
+  function escapeAttr(s){ return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+
+  function renderParams(){
+    const box = $('#paramList');
+    const names = Object.keys(state.params);
+    $('#paramCount').textContent = names.length ? names.length + ' 个' : '';
+    box.innerHTML = '';
+    if (!names.length){
+      box.innerHTML = '<div class="empty">在函数中输入形如 a·sin(b·x+c)+d 的表达式，<br>含字母的参数会自动出现在这里。</div>';
+      return;
+    }
+    names.forEach(n => {
+      const p = state.params[n];
+      const card = document.createElement('div');
+      card.className = 'pcard';
+      const tVal = p.t;
+      const expActive = p.mode === 'exp';
+      const sameSign = (p.min>0&&p.max>0)||(p.min<0&&p.max<0);
+      let meta = '';
+      if (p.mode === 'linear' || p.mode === 'exp'){
+        meta = '<div class="pmeta">' +
+          '<span class="lbl">范围</span>' +
+          '<input class="pmin" type="number" step="any" value="'+p.min+'">' +
+          '<span class="lbl">~</span>' +
+          '<input class="pmax" type="number" step="any" value="'+p.max+'">' +
+        '</div>';
+      }
+      let custom = '';
+      if (p.mode === 'custom'){
+        custom = '<div class="pcustom"><span class="t">f(t)=</span>' +
+          '<input class="pcexp" value="'+escapeAttr(p.customExpr)+'" spellcheck="false" placeholder="sin(t*PI)"></div>';
+      }
+      let hint = '';
+      if (p.mode === 'linear') hint = '<div class="pmode-hint">线性：<b>值 = min + t·(max−min)</b>，t 为滑块位置</div>';
+      else if (p.mode === 'exp') hint = '<div class="pmode-hint">指数：<b>值 = min·(max/min)<sup>t</sup></b>' + (sameSign ? '' : '（区间跨 0，已退化为线性）') + '</div>';
+      else hint = '<div class="pmode-hint">指定函数：<b>值 = f(t)</b>，t∈[0,1] 为滑块位置，可自由定义映射关系</div>';
+
+      card.innerHTML =
+        '<div class="pcard-top">' +
+          '<span class="pname">'+n+'</span>' +
+          '<input class="pval" type="text" value="'+fmt(p.value,6)+'">' +
+          '<select class="pmode">' +
+            '<option value="linear"'+(p.mode==='linear'?' selected':'')+'>线性</option>' +
+            '<option value="exp"'+(p.mode==='exp'?' selected':'')+'>指数</option>' +
+            '<option value="custom"'+(p.mode==='custom'?' selected':'')+'>指定函数</option>' +
+          '</select>' +
+        '</div>' +
+        '<input type="range" class="pslider '+p.mode+'" min="0" max="1000" value="'+Math.round(tVal*1000)+'">' +
+        meta + custom + hint;
+
+      // 滑块
+      card.querySelector('.pslider').addEventListener('input', ev => {
+        p.t = ev.target.value / 1000;
+        p.value = tToValue(p, p.t);
+        card.querySelector('.pval').value = fmt(p.value,6);
+        draw();
+      });
+      // 数值输入
+      const valInp = card.querySelector('.pval');
+      valInp.addEventListener('change', () => {
+        const v = parseFloat(valInp.value);
+        if (isFinite(v)){ p.value = v; p.t = valueToT(p, v); }
+        valInp.value = fmt(p.value,6);
+        card.querySelector('.pslider').value = Math.round(p.t*1000);
+        draw();
+      });
+      // 模式
+      card.querySelector('.pmode').addEventListener('change', ev => {
+        p.mode = ev.target.value;
+        p.t = valueToT(p, p.value);  // 保持值，重算位置
+        renderParams(); draw();
+      });
+      // 范围
+      const minInp = card.querySelector('.pmin'), maxInp = card.querySelector('.pmax');
+      if (minInp){
+        minInp.addEventListener('change', () => {
+          const v = parseFloat(minInp.value); if (isFinite(v)) p.min = v;
+          p.t = valueToT(p, p.value); renderParams(); draw();
+        });
+        maxInp.addEventListener('change', () => {
+          const v = parseFloat(maxInp.value); if (isFinite(v)) p.max = v;
+          p.t = valueToT(p, p.value); renderParams(); draw();
+        });
+      }
+      // 自定义表达式
+      const ce = card.querySelector('.pcexp');
+      if (ce){
+        ce.addEventListener('input', () => {
+          p.customExpr = ce.value;
+          p.t = valueToT(p, p.value);
+          draw();
+        });
+      }
+      box.appendChild(card);
+    });
+  }
+
+  /* ============================================================
+   *  7. AI 助手
+   * ============================================================ */
+  const AI_CFG_KEY = 'fnlab_ai_cfg_v1';
+  let aiCfg = { base: 'https://api.deepseek.com', key: '', model: 'deepseek-chat' };
+  try { const s = localStorage.getItem(AI_CFG_KEY); if (s) aiCfg = Object.assign(aiCfg, JSON.parse(s)); } catch(_){}
+
+  const aiMsgs = [];   // {role, content}
+  let aiBusy = false;
+
+  function updateAiStatus(){
+    $('#aiStatus').textContent = aiCfg.key ? ('已连接 · ' + (aiCfg.model||'deepseek-chat')) : '未配置 API — 点击 ⚙ 设置';
+  }
+
+  function pushMsg(role, content){
+    aiMsgs.push({ role: role === 'ai' ? 'assistant' : 'user', content });
+  }
+
+  function currentFuncsContext(){
+    const names = Object.keys(state.params);
+    const fs = state.funcs.filter(f => f.expr.trim()).map(f => 'y = ' + f.expr).join('；');
+    const ps = names.map(n => n + '=' + fmt(state.params[n].value,4)).join(', ');
+    return { fs, ps };
+  }
+
+  const SYS_PROMPT = '你是「函数图像实验室」网站内置的数学助手。你的职责：\n' +
+    '1. 回答与函数、图像、参数、导数相关的问题，准确、简洁；\n' +
+    '2. 当用户想画某个函数时，给出可直接使用的表达式，自变量固定用 x，参数用单个小写字母（如 a,b,c,d,k,p,s），并把这行表达式用 ```expr 代码块单独包裹（可给多行，每行一个函数）；\n' +
+    '3. 解释性质时覆盖：定义域、值域、周期、奇偶性、单调区间、极值、渐近线等；\n' +
+    '4. 表达式请使用编程风格：乘法可省略也可写 *，幂用 ^，函数名用 sin/cos/tan/exp/log/ln/log10/sqrt/abs/asin/atan 等；\n' +
+    '5. 回答用中文，涉及公式可用行内代码，不要输出多余寒暄。';
+
+  async function aiCall(userText, onDelta){
+    const { fs, ps } = currentFuncsContext();
+    const sys = SYS_PROMPT + '\n\n当前画布上的函数：' + (fs || '（暂无）') + '\n当前参数取值：' + (ps || '（无）');
+    const msgs = [{ role:'system', content: sys }].concat(aiMsgs.slice(-12));
+    const res = await fetch(aiCfg.base.replace(/\/$/,'') + '/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', 'Authorization':'Bearer ' + aiCfg.key },
+      body: JSON.stringify({ model: aiCfg.model || 'deepseek-chat', messages: msgs, stream: true, temperature: 0.6 })
+    });
+    if (!res.ok){
+      let detail = '';
+      try { const j = await res.json(); detail = j.error ? (j.error.message||JSON.stringify(j.error)) : JSON.stringify(j); }
+      catch(_){ detail = await res.text().catch(()=> ''); }
+      throw new Error('HTTP ' + res.status + ' ' + (detail||'').slice(0,200));
+    }
+    const reader = res.body.getReader();
+    const dec = new TextDecoder();
+    let buf = '', full = '';
+    while (true){
+      const { done, value } = await reader.read();
+      if (done) break;
+      buf += dec.decode(value, { stream:true });
+      const lines = buf.split('\n');
+      buf = lines.pop();
+      for (const line of lines){
+        const s = line.trim();
+        if (!s.startsWith('data:')) continue;
+        const data = s.slice(5).trim();
+        if (data === '[DONE]') continue;
+        try {
+          const j = JSON.parse(data);
+          const d = j.choices && j.choices[0] && j.choices[0].delta && j.choices[0].delta.content;
+          if (d){ full += d; onDelta(full); }
+        } catch(_){}
+      }
+    }
+    return full;
+  }
+
+  // 本地离线问答（未配置 Key 时）
+  function localAnswer(q){
+    const s = q.toLowerCase();
+    const has = (...ws) => ws.some(w => s.includes(w));
+    if (has('指数','exp模式','指数模式'))
+      return '**指数模式**：滑块位置 t∈[0,1] 映射为 `值 = min·(max/min)^t`，即按几何级数变化，适合跨越多个数量级的参数（如 [0.1, 10]）。例如 min=0.1、max=10 时，滑块中点对应的值是 √(0.1×10)=1。\n\n切换方法：点击参数卡片右侧的下拉框，选择「指数」。若区间跨越 0（如 [-5,5]），指数模式会自动退化为线性。';
+    if (has('线性','linear'))
+      return '**线性模式**：`值 = min + t·(max−min)`，t∈[0,1] 是滑块位置。滑块拖动时参数等速变化，最常见。';
+    if (has('指定函数','自定义','custom','f(t)'))
+      return '**指定函数模式**：直接定义 `值 = f(t)`，其中 t∈[0,1] 是滑块位置。例如填 `sin(t*PI)` 让参数沿正弦变化、填 `10*t` 让参数线性放大 10 倍、填 `t^2` 获得加速效果。\n\n填写位置：参数卡片下拉框选「指定函数」后，在 `f(t)=` 输入框中编辑。';
+    if (has('缩放','放大','缩小','zoom'))
+      return '**缩放**有三种方式：① 鼠标滚轮（以光标为中心）；② 右侧的竖向「缩放」滑条；③ 触屏双指捏合。拖动画面即可平移视图，「重置视图」可回到原点。';
+    if (has('参数','拖动','滑条','滑块'))
+      return '**改变参数**：每个参数都有一条滑块和一个数值框。拖动滑块即时改变；也可直接在数值框中输入精确值。参数会自动从你的函数表达式中识别（除 x 与内置函数名外的字母）。';
+    if (has('怎么用','使用','教程','help','帮助','入门'))
+      return '**快速上手**：\n1. 在左上「函数」里输入含参表达式，如 `a*sin(b*x+c)+d`；\n2. 左侧「参数」区会自动列出 a、b、c、d；\n3. 拖动滑块或输入数值改变参数；点击下拉框可切换「线性 / 指数 / 指定函数」三种映射；\n4. 滚轮缩放、拖动平移；工具栏可开关网格、刻度、切线；\n5. 点击右上「AI 助手」并配置 API 后即可对话，让 AI 帮你生成表达式并一键应用。';
+    return '（未配置 AI API）我可以离线回答软件的用法问题，试试问：「指数模式」「缩放」「怎么用」「指定函数」。\n若要数学问答，请点右上齿轮填入 DeepSeek API Key。';
+  }
+
+  function mdToHtml(s){
+    let html = String(s||'');
+    // 代码块
+    const blocks = [];
+    html = html.replace(/```(\w*)\n?([\s\S]*?)```/g, (m, lang, code) => {
+      blocks.push({ lang, code: code.replace(/\n$/,'') });
+      return '\u0000BLOCK' + (blocks.length-1) + '\u0000';
+    });
+    html = html.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+    html = html.replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>');
+    html = html.replace(/\u0000BLOCK(\d+)\u0000/g, (m, i) => {
+      const b = blocks[+i];
+      return '<pre data-lang="'+b.lang+'">' + b.code.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</pre>';
+    });
+    return html;
+  }
+
+  function addAiBubble(role, html, opts){
+    const box = $('#msgs');
+    const wrap = document.createElement('div');
+    wrap.className = 'msg ' + (role === 'me' ? 'me' : 'ai');
+    const b = document.createElement('div');
+    b.className = 'bubble';
+    b.innerHTML = html;
+    wrap.appendChild(b);
+    // 提取表达式 -> 应用按钮
+    if (role === 'ai' && opts && opts.expressions && opts.expressions.length){
+      opts.expressions.forEach(exprs => {
+        const btn = document.createElement('button');
+        btn.className = 'applybtn';
+        btn.textContent = '↳ 应用到画布：' + exprs.join(' , ').slice(0,40);
+        btn.addEventListener('click', () => applyExpressions(exprs));
+        wrap.appendChild(btn);
+      });
+    }
+    box.appendChild(wrap);
+    box.scrollTop = box.scrollHeight;
+    return b;
+  }
+
+  function extractExprBlocks(text){
+    const out = [];
+    const re = /```(?:expr|math|txt|)\s*\n?([\s\S]*?)```/g;
+    let m;
+    while ((m = re.exec(text))){
+      const lines = m[1].split('\n').map(l => l.trim()).filter(Boolean)
+        .map(l => l.replace(/^[a-zA-Z_]\w*\s*\(x\)\s*=/, '').replace(/^y\s*=|^f\s*\(x\)\s*=/i,'').trim())
+        .filter(l => l && /[a-zA-Z]/.test(l) && !/^[（(].*[）)]$/.test(l));
+      if (lines.length) out.push(lines);
+    }
+    return out;
+  }
+
+  function applyExpressions(exprs){
+    // 清空并写入
+    state.funcs = [];
+    fnSeq = 1;
+    exprs.forEach((e, i) => addFunc(e, state.colors[i % state.colors.length], true));
+    rebuildParams(true);
+    renderFnList(); renderParams(); draw();
+    toast('已应用 ' + exprs.length + ' 个函数', 'ok');
+  }
+
+  async function sendAi(){
+    const inp = $('#aiInput');
+    const text = inp.value.trim();
+    if (!text || aiBusy) return;
+    inp.value = ''; inp.style.height = 'auto';
+    addAiBubble('me', escapeHtml(text));
+    pushMsg('user', text);
+    aiBusy = true; $('#aiSend').disabled = true;
+
+    const b = addAiBubble('ai', '<span class="typing"><i></i><i></i><i></i></span>');
+    try {
+      if (!aiCfg.key){
+        // 离线回答
+        await sleep(280);
+        const ans = localAnswer(text);
+        b.innerHTML = mdToHtml(ans);
+        pushMsg('ai', ans);
+      } else {
+        let last = '';
+        const full = await aiCall(text, (partial) => {
+          if (partial.length - last.length > 6 || partial.length < last.length){
+            last = partial;
+            b.innerHTML = mdToHtml(partial);
+            $('#msgs').scrollTop = $('#msgs').scrollHeight;
+          }
+        });
+        b.innerHTML = mdToHtml(full);
+        pushMsg('ai', full);
+        const blocks = extractExprBlocks(full);
+        if (blocks.length){
+          const wrap = b.parentElement;
+          blocks.forEach(exprs => {
+            const btn = document.createElement('button');
+            btn.className = 'applybtn';
+            btn.textContent = '↳ 应用到画布：' + exprs.join(' , ').slice(0,40);
+            btn.addEventListener('click', () => applyExpressions(exprs));
+            wrap.appendChild(btn);
+          });
+        }
+      }
+    } catch(err){
+      b.innerHTML = '⚠️ 调用失败：' + escapeHtml(err.message || String(err)) +
+        '<br><br>可能原因：API Key 无效 / 余额不足 / 网络或跨域被拦截。可在 ⚙ 中检查地址与 Key。';
+    } finally {
+      aiBusy = false; $('#aiSend').disabled = false;
+      $('#msgs').scrollTop = $('#msgs').scrollHeight;
+    }
+  }
+  function sleep(ms){ return new Promise(r => setTimeout(r, ms)); }
+  function escapeHtml(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  /* ============================================================
+   *  8. 事件绑定 / 初始化
+   * ============================================================ */
+  $('#addFn').addEventListener('click', () => {
+    addFunc('a*x^2+b', null, false);
+    draw();
+  });
+  $('#resetBtn').addEventListener('click', () => {
+    state.view = { cx: 0, cy: 0, scale: 70 };
+    updateZoomUI(); draw();
+    toast('视图已重置');
+  });
+  $('#sideToggle').addEventListener('click', () => $('#side').classList.toggle('collapsed'));
+  $('#aiToggle').addEventListener('click', () => {
+    const ai = $('#ai');
+    ai.classList.toggle('collapsed');
+    if (!ai.classList.contains('collapsed')){
+      $('#aiInput').focus();
+      if (!aiMsgs.length){
+        addAiBubble('ai', mdToHtml('你好！我是函数图像助手 👋\n\n我可以：\n- 解释当前函数的性质（定义域、周期、单调性…）\n- 根据描述给出可用的函数表达式，并**一键应用到画布**\n- 讲解参数滑条的三种映射模式\n\n' + (aiCfg.key ? '直接问我吧。' : '（当前未配置 API，我可以离线回答用法问题；配置 Key 后可进行数学问答）')));
+      }
+    }
+  });
+  $('#aiClose').addEventListener('click', () => $('#ai').classList.add('collapsed'));
+
+  $('#btnGrid').addEventListener('click', () => { state.showGrid = !state.showGrid; $('#btnGrid').classList.toggle('on', state.showGrid); draw(); });
+  $('#btnTicks').addEventListener('click', () => { state.showTicks = !state.showTicks; $('#btnTicks').classList.toggle('on', state.showTicks); draw(); });
+  $('#btnDeriv').addEventListener('click', () => { state.showDeriv = !state.showDeriv; $('#btnDeriv').classList.toggle('on', state.showDeriv); draw(); });
+  $('#btnZoomIn').addEventListener('click', () => setScale(state.view.scale * 1.35));
+  $('#btnZoomOut').addEventListener('click', () => setScale(state.view.scale / 1.35));
+  $('#zoomSlider').addEventListener('input', e => {
+    state.view.scale = sliderToScale(+e.target.value);
+    updateZoomUI(); draw();
+  });
+
+  $('#aiSend').addEventListener('click', sendAi);
+  $('#aiInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); sendAi(); }
+  });
+  $('#aiInput').addEventListener('input', e => {
+    e.target.style.height = 'auto';
+    e.target.style.height = Math.min(e.target.scrollHeight, 130) + 'px';
+  });
+  $$('#aiChips .chip').forEach(c => c.addEventListener('click', () => {
+    $('#aiInput').value = c.dataset.q;
+    sendAi();
+  }));
+
+  // 设置弹窗
+  function openSettings(){
+    $('#cfgBase').value = aiCfg.base;
+    $('#cfgKey').value = aiCfg.key;
+    $('#cfgModel').value = aiCfg.model;
+    $('#setModal').classList.add('show');
+  }
+  $('#aiSettings').addEventListener('click', openSettings);
+  $('#cfgCancel').addEventListener('click', () => $('#setModal').classList.remove('show'));
+  $('#cfgSave').addEventListener('click', () => {
+    aiCfg.base = $('#cfgBase').value.trim() || 'https://api.deepseek.com';
+    aiCfg.key = $('#cfgKey').value.trim();
+    aiCfg.model = $('#cfgModel').value.trim() || 'deepseek-chat';
+    try { localStorage.setItem(AI_CFG_KEY, JSON.stringify(aiCfg)); } catch(_){}
+    updateAiStatus();
+    $('#setModal').classList.remove('show');
+    toast(aiCfg.key ? 'AI 已配置' : '已保存（未填 Key，使用离线问答）', 'ok');
+  });
+  $('#setModal').addEventListener('click', e => { if (e.target.id === 'setModal') $('#setModal').classList.remove('show'); });
+
+  window.addEventListener('resize', resize);
+
+  // ---- 初始化 ----
+  function init(){
+    addFunc('a*sin(b*x+c)+d', state.colors[0], true);
+    rebuildParams(true);
+    renderFnList();
+    renderParams();
+    updateAiStatus();
+    updateZoomUI();
+    resize();
+  }
+  init();
+})();
+</script>
+</body>
+</html>
