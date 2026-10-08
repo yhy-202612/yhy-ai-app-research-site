@@ -102,6 +102,8 @@
   }
   .fnrow2 input.ftmin:focus,.fnrow2 input.ftmax:focus{outline:none;border-color:var(--accent);color:var(--text)}
   .fnhint{font-size:10.5px;color:var(--muted2);line-height:1.45;margin-top:2px}
+  .fnhint .useeg{color:var(--accent);text-decoration:none;border-bottom:1px dashed currentColor;cursor:pointer;white-space:nowrap}
+  .fnhint .useeg:hover{color:#79c0ff}
 
   /* param card */
   #paramList{overflow-y:auto;flex:1;min-height:0}
@@ -1134,9 +1136,9 @@
     if (!fn) return;
     const x0 = mouseWX;
     const h = Math.max(1e-4, (sx2w(1) - sx2w(0)));
-    const y0 = fn(x0, pv);
+    const y0 = fn([x0], pv);
     if (!isFinite(y0)) return;
-    const k = (fn(x0+h, pv) - fn(x0-h, pv)) / (2*h);
+    const k = (fn([x0+h], pv) - fn([x0-h], pv)) / (2*h);
     if (!isFinite(k)) return;
     const sx0 = w2sx(x0), sy0 = w2sy(y0);
     ctx.save();
@@ -1430,12 +1432,54 @@
     implicit: 'F(x,y)=0，可画圆/椭圆/双曲线/心形线等，如 x^2+y^2-1'
   };
   const TYPE_PLACEHOLDER = { y: 'a*sin(b*x+c)+d', param: 'c*cos(t)', polar: '1+cos(t)', implicit: 'x^2+y^2-1' };
+  const TYPE_DEFAULTS = {
+    y:        { expr: 'a*sin(b*x+c)+d', expr2: '' },
+    param:    { expr: 'cos(t)',         expr2: 'sin(t)' },
+    polar:    { expr: '1+cos(t)',       expr2: '' },
+    implicit: { expr: 'x^2+y^2-1',      expr2: '' }
+  };
+  // 该类型必须出现的自变量（隐函数必须有 y；参数/极坐标必须有 t）
+  const TYPE_NEEDS = { y: [], param: ['t'], polar: ['t'], implicit: ['y'] };
+  // 表达式在指定类型下“能否画出图形”：含必需自变量 + 采样可算出有限值
+  function exprUsable(expr, type, names){
+    if (!expr || !expr.trim()) return false;
+    const ids = expr.match(/[A-Za-z_][A-Za-z0-9_]*/g) || [];
+    if (!TYPE_NEEDS[type].every(n => ids.indexOf(n) >= 0)) return false;
+    const fn = makeFn(expr, funcArgs({ type: type }), names || Object.keys(state.params));
+    if (!fn) return false;
+    const pv = (names || Object.keys(state.params)).map(n => state.params[n].value);
+    const samples = type === 'implicit'
+      ? [[0,0],[1,1],[-1,0.5],[0.7,-1.3],[2,-2]]
+      : type === 'y' ? [[0],[1],[-1],[2.5]] : [[0],[1],[-1],[2],[4]];
+    return samples.some(s => isFinite(fn(s, pv)));
+  }
+  // 补全一条曲线使其可绘制（参数方程缺 y(t)、范围非法时）
+  function completeFunc(f){
+    const names = Object.keys(state.params);
+    if (f.type === 'param' && !exprUsable(f.expr2, 'param', names)) f.expr2 = 'sin(t)';
+    if ((f.type === 'param' || f.type === 'polar') && !(f.tmax > f.tmin)){ f.tmin = 0; f.tmax = TAU_VAL; }
+  }
+  // 切换曲线类型：旧表达式在新类型下不可用时，自动换成该类型的示例表达式（不再“切过去就消失”）
+  function switchFuncType(f, type){
+    if (!TYPE_DEFAULTS[type]) return;
+    const names = Object.keys(state.params);
+    const keep = exprUsable(f.expr, type, names);
+    f.type = type;
+    if (!keep){
+      const d = TYPE_DEFAULTS[type];
+      f.expr = d.expr; f.expr2 = d.expr2;
+    }
+    completeFunc(f);
+    rebuildParams(true); renderFnList(); renderParams(); draw();
+    if (!keep) toast('已切换到「' + TYPE_LABEL[type] + '」并填入示例：' + f.expr +
+      (type === 'param' ? ' , ' + f.expr2 : ''), 'ok');
+  }
   function renderFnList(){
     const box = $('#fnList');
     box.innerHTML = '';
     state.funcs.forEach(f => {
       const names = Object.keys(state.params);
-      const bad = !!(f.expr.trim() && !funcCompiled(f, names));
+      const bad = !!(f.expr.trim() && (!exprUsable(f.expr, f.type, names) || (f.type === 'param' && !exprUsable(f.expr2, 'param', names))));
       const isParam = f.type === 'param';
       const hasT = f.type === 'param' || f.type === 'polar';
       const mainLabel = f.type === 'y' ? 'y =' : f.type === 'polar' ? 'r =' : f.type === 'implicit' ? 'F =' : 'x(t) =';
@@ -1457,13 +1501,9 @@
         (hasT ? '<div class="fnrow2"><span class="lbl">'+(f.type==='polar'?'θ':'t')+' 范围</span>' +
           '<input class="ftmin" type="number" step="any" value="'+f.tmin+'"><span class="lbl">~</span>' +
           '<input class="ftmax" type="number" step="any" value="'+f.tmax+'"><span class="mini">默认 0~2π</span></div>' : '') +
-        '<div class="fnhint">'+TYPE_HINT[f.type]+'</div>';
+        '<div class="fnhint">'+TYPE_HINT[f.type]+' <a class="useeg" href="javascript:void(0)">填入示例</a></div>';
 
-      item.querySelector('.ftype').addEventListener('change', e => {
-        f.type = e.target.value;
-        if (f.type === 'param'){ if (!f.expr.trim()) f.expr = 'cos(t)'; if (!f.expr2.trim()) f.expr2 = 'sin(t)'; }
-        rebuildParams(true); renderFnList(); renderParams(); draw();
-      });
+      item.querySelector('.ftype').addEventListener('change', e => { switchFuncType(f, e.target.value); });
       const inp = item.querySelector('.fexpr');
       inp.addEventListener('input', () => {
         f.expr = inp.value;
@@ -1478,6 +1518,13 @@
           const v = parseFloat(el.value);
           if (isFinite(v)){ f[key] = v; draw(); } else { el.value = f[key]; }
         });
+      });
+      const eg = item.querySelector('.useeg');
+      if (eg) eg.addEventListener('click', () => {
+        const d = TYPE_DEFAULTS[f.type];
+        f.expr = d.expr; f.expr2 = d.expr2;
+        if (f.type === 'param' || f.type === 'polar'){ f.tmin = 0; f.tmax = TAU_VAL; }
+        rebuildParams(true); renderFnList(); renderParams(); draw();
       });
       item.querySelector('.eye').addEventListener('click', () => {
         f.visible = !f.visible;
@@ -2119,6 +2166,7 @@
             if (typeof a.expr2 === 'string') f.expr2 = a.expr2;
             if (isFinite(a.tmin)) f.tmin = +a.tmin;
             if (isFinite(a.tmax)) f.tmax = +a.tmax;
+            completeFunc(f);
             done.push('函数' + ((a.index|0)+1) + '→' + f.expr);
           }
         } else if (a.op === 'addFunc'){
@@ -2127,6 +2175,7 @@
             if (typeof a.expr2 === 'string') nf.expr2 = a.expr2;
             if (isFinite(a.tmin)) nf.tmin = +a.tmin;
             if (isFinite(a.tmax)) nf.tmax = +a.tmax;
+            completeFunc(nf);
             state.funcs.push(nf);
             done.push('新增 ' + (a.type || 'y') + '：' + a.expr);
           }
