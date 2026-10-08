@@ -232,6 +232,19 @@
     background:#0b0f14;border:1px solid var(--border);border-radius:8px;padding:9px 11px;overflow-x:auto;
     margin:6px 0;font-family:"SF Mono",monospace;font-size:12.5px;white-space:pre;
   }
+  .msg.ai .cot{margin:0 0 9px}
+  .msg.ai .cot summary{
+    cursor:pointer;font-size:12px;color:var(--muted);user-select:none;list-style:none;
+    padding:4px 8px;border:1px dashed #30363d;border-radius:7px;display:inline-block;
+  }
+  .msg.ai .cot summary::-webkit-details-marker{display:none}
+  .msg.ai .cot summary:hover{color:var(--text);border-color:#4a5563}
+  .msg.ai .cot[open] summary{border-style:solid;color:var(--accent);border-color:#26436b;margin-bottom:6px}
+  .msg.ai .cot-body{
+    font-size:12px;color:var(--muted);white-space:pre-wrap;max-height:280px;overflow-y:auto;
+    background:#0b0f14;border:1px solid var(--border);border-radius:8px;padding:9px 11px;line-height:1.6;
+    border-left:2px solid #8957e5;
+  }
   .applybtn{
     align-self:flex-start;margin-top:7px;background:#132235;border:1px solid #26436b;color:var(--accent);
     padding:5px 11px;border-radius:8px;font-size:12px;cursor:pointer;transition:.15s;
@@ -337,7 +350,8 @@
           </button>
         </div>
         <div id="fnList"></div>
-        <div class="mini" style="margin-top:2px">自变量为 <b>x</b>；可用 sin / cos / exp / log / sqrt / abs / ^ 等。</div>
+        <div class="mini" style="margin-top:2px">自变量为 <b>x</b>；支持 60+ 函数与常量（sin/cos/tan/cot/exp/ln/lg/log/sqrt/cbrt/abs/floor/gamma/mod/nthroot…）。
+          <a href="javascript:void(0)" id="fnHelp" style="color:var(--accent);text-decoration:none">函数参考 ▸</a></div>
       </div>
       <div class="sec" style="padding-bottom:6px;border-bottom:none">
         <div class="sec-head" style="margin-bottom:6px">
@@ -435,6 +449,17 @@
               <label style="min-width:auto">面透明度</label>
               <input id="traceAlpha" type="range" min="0.05" max="0.6" step="0.01" value="0.22" style="flex:1">
             </div>
+            <div class="fp-row">
+              <label>时长ms</label>
+              <input id="traceDur" type="number" min="600" max="30000" step="200" value="4000">
+              <label style="min-width:auto;display:flex;align-items:center;gap:5px">
+                <input type="checkbox" id="tracePingpong" checked style="width:auto;flex:0 0 auto">往返
+              </label>
+            </div>
+            <div class="fp-row">
+              <button class="hbtn primary" id="animPlay" style="flex:1;justify-content:center">▶ 动态演示</button>
+              <button class="hbtn" id="animStop" style="flex:1;justify-content:center">⏹ 停止</button>
+            </div>
             <div class="fp-sub">让选定参数在「起点 → 终点」间连续变化：画出曲线族扫过的<b>面轨迹</b>（区域），以及某特征点随参数移动形成的<b>点轨迹</b>（曲线）。起终点可直接拖动滑条或输入数值。</div>
           </div>
         </div>
@@ -464,6 +489,7 @@
           <div class="chip" data-q="给出一个能展示振幅、频率、相位变化的含参正弦函数表达式">含参正弦函数</div>
           <div class="chip" data-q="把参数 a 调到 2，并把所有参数的范围设为 -5 到 5">调整参数（实时控制）</div>
           <div class="chip" data-q="讲解轨迹模式，并让参数 a 从 -2 扫到 2 显示面轨迹">演示轨迹</div>
+          <div class="chip" data-q="播放动态演示：让参数 a 从 -3 到 3 往返变化">动态演示</div>
         </div>
         <textarea id="aiInput" rows="1" placeholder="问问我关于函数与图像的问题…（Enter 发送，Shift+Enter 换行）"></textarea>
         <div class="airow">
@@ -493,7 +519,12 @@
       </div>
       <div class="field">
         <label>模型</label>
-        <input id="cfgModel" placeholder="deepseek-chat" autocomplete="off">
+        <input id="cfgModel" placeholder="deepseek-flash" autocomplete="off" list="modelList">
+        <datalist id="modelList">
+          <option value="deepseek-flash">DeepSeek V4.1 Flash（默认 · 推理模型）</option>
+          <option value="deepseek-v4-pro">DeepSeek V4 Pro（深度推理）</option>
+        </datalist>
+        <div class="hint">默认 deepseek-flash（V4.1 Flash）。推理模型会返回「思维链」，可在回复中展开查看。</div>
       </div>
     </div>
     <div class="foot">
@@ -535,6 +566,25 @@
   </div>
 </div>
 
+<div class="modal-bg" id="fnHelpModal">
+  <div class="modal">
+    <h3>🧮 函数参考</h3>
+    <div class="body" style="font-size:13px;line-height:1.95">
+      <p style="margin-bottom:10px;color:var(--muted)">自变量固定为 <b style="color:var(--text)">x</b>；形如 <code style="color:#58a6ff">a*sin(b*x+c)+d</code> 里的 a,b,c,d 会自动成为可拖动的参数。</p>
+      <div><b>三角</b>：sin cos tan · cot sec csc · asin acos atan（或 arcsin arccos arctan）</div>
+      <div><b>双曲</b>：sinh cosh tanh · asinh acosh atanh</div>
+      <div><b>指数对数</b>：exp · ln（自然对数） · lg / log10（常用对数） · log2 · log(b,x)（以 b 为底）</div>
+      <div><b>幂与根</b>：sqrt cbrt nthroot(x,n) · ^（如 x^3）</div>
+      <div><b>取整与符号</b>：abs sign floor ceil round trunc frac</div>
+      <div><b>其它</b>：mod(a,b) · min max clamp · pow hypot · gamma Γ(x) · fact 阶乘 · step 阶跃 · heaviside · sinc · erf</div>
+      <div><b>常量</b>：PI（π） · E · TAU（2π） · phi（黄金比）</div>
+      <div><b>分段函数</b>：用三元表达式，如 <code>x&gt;0?x:-x</code> 或 <code>x&lt;1?x:x^2</code></div>
+      <div><b>隐式乘法</b>：<code>2x</code>、<code>3sin(x)</code>、<code>(x+1)(x-1)</code> 都可直接写</div>
+    </div>
+    <div class="foot"><button class="hbtn primary" id="fnHelpClose">知道了</button></div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -547,9 +597,59 @@
   const $ = (s, r) => (r||document).querySelector(s);
   const $$ = (s, r) => Array.from((r||document).querySelectorAll(s));
   const clamp = (v,a,b) => v<a?a:(v>b?b:v);
-  const MATH_NAMES = Object.getOwnPropertyNames(Math).filter(k => typeof Math[k] === 'number' || typeof Math[k] === 'function');
-  const MATH_VALS = MATH_NAMES.map(k => Math[k]);
-  const RESERVED = new Set(['x','t','e','E','pi','PI'].concat(MATH_NAMES));
+  // 数值 Γ 函数（Lanczos 近似），供 gamma / fact 使用
+  function gammaFn(x){
+    if (x < 0.5) return Math.PI / (Math.sin(Math.PI * x) * gammaFn(1 - x));
+    const g = 7;
+    const C = [0.99999999999980993, 676.5203681218851, -1259.1392167224028, 771.32342877765313,
+      -176.61502916214059, 12.507343278686905, -0.13857109526572012, 9.9843695780195716e-6, 1.5056327351493116e-7];
+    x -= 1;
+    let a = C[0];
+    const t = x + g + 0.5;
+    for (let i = 1; i < g + 2; i++) a += C[i] / (x + i);
+    return Math.sqrt(2 * Math.PI) * Math.pow(t, x + 0.5) * Math.exp(-t) * a;
+  }
+  // 在 Math 基础上扩展的常用函数 / 常量（面向中学与常见作图）
+  const EXTRA_FUNCS = {
+    e: Math.E,
+    ln: x => Math.log(x), lg: x => Math.log10(x), log10: x => Math.log10(x), log2: x => Math.log2(x),
+    // log(x) 单参 = 自然对数 ln(x)；log(b, x) 双参 = 以 b 为底
+    log: function(a, b){ return (b === undefined) ? Math.log(a) : Math.log(b) / Math.log(a); },
+    exp: x => Math.exp(x), sqrt: x => Math.sqrt(x), cbrt: x => Math.cbrt(x),
+    nthroot: (x, n) => (x < 0 && Math.abs(n % 2) === 1) ? -Math.pow(-x, 1 / n) : Math.pow(x, 1 / n),
+    abs: x => Math.abs(x), sign: x => Math.sign(x), sgn: x => Math.sign(x),
+    floor: x => Math.floor(x), ceil: x => Math.ceil(x), round: x => Math.round(x), trunc: x => Math.trunc(x),
+    frac: x => x - Math.floor(x),
+    mod: (a, b) => ((a % b) + b) % b,
+    clamp: (x, a, b) => Math.min(Math.max(x, a), b),
+    pow: (a, b) => Math.pow(a, b), hypot: Math.hypot, atan2: Math.atan2,
+    sin: x => Math.sin(x), cos: x => Math.cos(x), tan: x => Math.tan(x),
+    asin: x => Math.asin(x), acos: x => Math.acos(x), atan: x => Math.atan(x),
+    arcsin: x => Math.asin(x), arccos: x => Math.acos(x), arctan: x => Math.atan(x),
+    sec: x => 1 / Math.cos(x), csc: x => 1 / Math.sin(x), cot: x => 1 / Math.tan(x),
+    asec: x => Math.acos(1 / x), acsc: x => Math.asin(1 / x), acot: x => Math.atan(1 / x),
+    sinh: x => Math.sinh(x), cosh: x => Math.cosh(x), tanh: x => Math.tanh(x),
+    asinh: x => Math.asinh(x), acosh: x => Math.acosh(x), atanh: x => Math.atanh(x),
+    step: x => x < 0 ? 0 : 1,
+    heaviside: x => x < 0 ? 0 : (x === 0 ? 0.5 : 1),
+    sinc: x => x === 0 ? 1 : Math.sin(x) / x,
+    gamma: x => gammaFn(x),
+    fact: x => (x >= 0 && Number.isInteger(x)) ? (function f(n){ return n <= 1 ? 1 : n * f(n - 1); })(x) : gammaFn(x + 1),
+    erf: x => {
+      const s = Math.sign(x), ax = Math.abs(x), t = 1 / (1 + 0.3275911 * ax);
+      const y = 1 - (((((1.061405429 * t - 1.453152027) * t) + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t * Math.exp(-ax * ax);
+      return s * y;
+    },
+    PI: Math.PI, TAU: 2 * Math.PI, E: Math.E, phi: (1 + Math.sqrt(5)) / 2
+  };
+  const FUNC_MAP = {};
+  Object.getOwnPropertyNames(Math).forEach(k => {
+    if (typeof Math[k] === 'number' || typeof Math[k] === 'function') FUNC_MAP[k] = Math[k];
+  });
+  Object.keys(EXTRA_FUNCS).forEach(k => { FUNC_MAP[k] = EXTRA_FUNCS[k]; });
+  const FUNC_NAMES = Object.keys(FUNC_MAP);
+  const FUNC_VALS = FUNC_NAMES.map(k => FUNC_MAP[k]);
+  const RESERVED = new Set(['x', 't', 'pi'].concat(FUNC_NAMES));
 
   let toastTimer = null;
   function toast(msg, kind){
@@ -594,12 +694,12 @@
     let fn = null;
     try {
       const body = '"use strict";return (' + preprocess(expr) + ');';
-      fn = new Function('x', ...paramNames, ...MATH_NAMES, body);
+      fn = new Function('x', ...paramNames, ...FUNC_NAMES, body);
     } catch(e){
       fn = null;
     }
     const wrapped = fn ? ((x, pv) => {
-      try { return fn(x, ...pv, ...MATH_VALS); }
+      try { return fn(x, ...pv, ...FUNC_VALS); }
       catch(e){ return NaN; }
     }) : null;
     compileCache.set(key, wrapped);
@@ -611,11 +711,11 @@
     if (customCache.has(expr)) return customCache.get(expr)(t);
     let f;
     try {
-      f = new Function('t', ...MATH_NAMES, '"use strict";return (' + preprocess(expr) + ');');
+      f = new Function('t', ...FUNC_NAMES, '"use strict";return (' + preprocess(expr) + ');');
     } catch(e){
       f = () => NaN;
     }
-    const w = (tt) => { try { return f(tt, ...MATH_VALS); } catch(e){ return NaN; } };
+    const w = (tt) => { try { return f(tt, ...FUNC_VALS); } catch(e){ return NaN; } };
     customCache.set(expr, w);
     return w(t);
   }
@@ -691,6 +791,7 @@
       kind: 'area', pointType: 'extremum', x0: 0,
       color: '#f0883e', alpha: 0.22
     },
+    anim: { on: false, t0: 0, duration: 4000, pingpong: true, raf: null },
   };
 
   function newParam(name){
@@ -1318,14 +1419,14 @@
    *  7. AI 助手
    * ============================================================ */
   const AI_CFG_KEY = 'fnlab_ai_cfg_v1';
-  let aiCfg = { base: 'https://api.deepseek.com', key: '', model: 'deepseek-chat' };
+  let aiCfg = { base: 'https://api.deepseek.com', key: '', model: 'deepseek-flash' };
   try { const s = localStorage.getItem(AI_CFG_KEY); if (s) aiCfg = Object.assign(aiCfg, JSON.parse(s)); } catch(_){}
 
   const aiMsgs = [];   // {role, content}
   let aiBusy = false;
 
   function updateAiStatus(){
-    $('#aiStatus').textContent = aiCfg.key ? ('已连接 · ' + (aiCfg.model||'deepseek-chat')) : '未配置 API — 点击 ⚙ 设置';
+    $('#aiStatus').textContent = aiCfg.key ? ('已连接 · ' + (aiCfg.model||'deepseek-flash')) : '未配置 API — 点击 ⚙ 设置';
   }
 
   function pushMsg(role, content){
@@ -1354,8 +1455,11 @@
     '   {"op":"setMode","name":"b","mode":"exp"} 切换滑条模式：linear/exp/custom（custom 可加 "expr":"sin(t*PI)" 指定映射函数，t∈[0,1] 为滑块位置）\n' +
     '   {"op":"setView","cx":0,"cy":0,"scale":80} 设置视图中心世界坐标与缩放\n' +
     '   {"op":"setTrace","param":"a","start":-3,"end":3,"steps":48,"kind":"area|point|both","pointType":"extremum|zero|fixed","x0":0} 设置轨迹模式\n' +
+    '   {"op":"animate","param":"a","from":-3,"to":3,"duration":4000,"pingpong":true} 播放动态演示：让参数在区间内自动变化、函数图像随之动起来（系统会自动播放）\n' +
+    '   {"op":"stopAnim"} 停止动态演示\n' +
     '   {"op":"reset"} 重置视图与参数\n' +
-    '7. 只输出确实需要的指令；解释文字放正文，指令放代码块，不要在正文中重复指令内容。';
+    '7. 【可用函数】sin cos tan cot sec csc、arcsin arccos arctan(或 asin acos atan)、sinh cosh tanh、exp ln lg log log2、sqrt cbrt nthroot、abs sign floor ceil round trunc frac、mod min max clamp pow hypot、gamma fact step heaviside sinc erf；常量 PI E TAU phi；支持 ^ 幂与三元表达式（如 x>0?x:-x 实现分段函数）。\n' +
+    '8. 当用户说"演示一下""动起来""看看参数变化"时，优先使用 animate 指令做动态演示。只输出确实需要的指令；解释文字放正文，指令放代码块，不要在正文里重复指令内容。';
 
   async function aiCall(userText, onDelta){
     const { fs, ps } = currentFuncsContext();
@@ -1364,7 +1468,7 @@
     const res = await fetch(aiCfg.base.replace(/\/$/,'') + '/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type':'application/json', 'Authorization':'Bearer ' + aiCfg.key },
-      body: JSON.stringify({ model: aiCfg.model || 'deepseek-chat', messages: msgs, stream: true, temperature: 0.6 })
+      body: JSON.stringify({ model: aiCfg.model || 'deepseek-flash', messages: msgs, stream: true, temperature: 0.6 })
     });
     if (!res.ok){
       let detail = '';
@@ -1374,7 +1478,7 @@
     }
     const reader = res.body.getReader();
     const dec = new TextDecoder();
-    let buf = '', full = '';
+    let buf = '', full = '', reasoning = '';
     while (true){
       const { done, value } = await reader.read();
       if (done) break;
@@ -1388,12 +1492,15 @@
         if (data === '[DONE]') continue;
         try {
           const j = JSON.parse(data);
-          const d = j.choices && j.choices[0] && j.choices[0].delta && j.choices[0].delta.content;
-          if (d){ full += d; onDelta(full); }
+          const d = j.choices && j.choices[0] && j.choices[0].delta;
+          if (!d) continue;
+          if (d.reasoning_content) reasoning += d.reasoning_content;
+          if (d.content) full += d.content;
+          if (d.reasoning_content || d.content) onDelta(full, reasoning);
         } catch(_){}
       }
     }
-    return full;
+    return { content: full, reasoning: reasoning };
   }
 
   // 本地离线问答（未配置 Key 时）
@@ -1431,6 +1538,17 @@
       return '<pre data-lang="'+b.lang+'">' + b.code.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</pre>';
     });
     return html;
+  }
+
+  // 组装消息 HTML：可折叠「思维链」+ 正文
+  function renderMsgHtml(content, reasoning){
+    let h = '';
+    if (reasoning && reasoning.trim()){
+      const r = reasoning.length > 4000 ? '…（前略）\n' + reasoning.slice(-4000) : reasoning;
+      h += '<details class="cot"><summary>🧠 思维链 · ' + reasoning.length + ' 字</summary>' +
+           '<div class="cot-body">' + escapeHtml(r) + '</div></details>';
+    }
+    return h + mdToHtml(content);
   }
 
   function addAiBubble(role, html, opts){
@@ -1497,16 +1615,17 @@
         b.innerHTML = mdToHtml(ans);
         pushMsg('ai', ans);
       } else {
-        let last = '';
-        const full = await aiCall(text, (partial) => {
-          if (partial.length - last.length > 6 || partial.length < last.length){
-            last = partial;
-            b.innerHTML = mdToHtml(stripActions(partial));
-            $('#msgs').scrollTop = $('#msgs').scrollHeight;
-          }
+        let lastLen = -1, lastT = 0;
+        const out = await aiCall(text, (partial, reasoning) => {
+          const now = Date.now();
+          if (now - lastT < 70 && partial.length - lastLen < 24) return;
+          lastT = now; lastLen = partial.length;
+          b.innerHTML = renderMsgHtml(stripActions(partial), reasoning);
+          $('#msgs').scrollTop = $('#msgs').scrollHeight;
         });
+        const full = out.content;
         const display = stripActions(full);
-        b.innerHTML = mdToHtml(display);
+        b.innerHTML = renderMsgHtml(display, out.reasoning);
         pushMsg('ai', full);
         // 实时控制：解析并执行 action 指令
         const acts = extractActions(full);
@@ -1603,7 +1722,7 @@
   $('#cfgSave').addEventListener('click', () => {
     aiCfg.base = $('#cfgBase').value.trim() || 'https://api.deepseek.com';
     aiCfg.key = $('#cfgKey').value.trim();
-    aiCfg.model = $('#cfgModel').value.trim() || 'deepseek-chat';
+    aiCfg.model = $('#cfgModel').value.trim() || 'deepseek-flash';
     try { localStorage.setItem(AI_CFG_KEY, JSON.stringify(aiCfg)); } catch(_){}
     updateAiStatus();
     $('#setModal').classList.remove('show');
@@ -1662,6 +1781,11 @@
   });
   $('#rangeModal').addEventListener('click', e => { if (e.target.id === 'rangeModal') $('#rangeModal').classList.remove('show'); });
 
+  // ---- 函数参考 ----
+  $('#fnHelp').addEventListener('click', () => $('#fnHelpModal').classList.add('show'));
+  $('#fnHelpClose').addEventListener('click', () => $('#fnHelpModal').classList.remove('show'));
+  $('#fnHelpModal').addEventListener('click', e => { if (e.target.id === 'fnHelpModal') $('#fnHelpModal').classList.remove('show'); });
+
   /* ---------- 轨迹面板交互 ---------- */
   function syncTraceControls(){
     const tr = state.trace;
@@ -1689,6 +1813,8 @@
     $('#traceColor').value = tr.color;
     $('#traceAlpha').value = tr.alpha;
     $('#traceX0Row').style.display = tr.pointType === 'fixed' ? 'flex' : 'none';
+    $('#traceDur').value = state.anim.duration;
+    $('#tracePingpong').checked = state.anim.pingpong;
     $$('#traceKindSeg button').forEach(b => b.classList.toggle('on', b.dataset.k === tr.kind));
   }
   function bindTraceNums(){
@@ -1751,9 +1877,57 @@
     bindTraceNums(); draw();
   }));
 
+  /* ---------- 动态演示（参数动画）---------- */
+  function updateLiveParamUI(name){
+    const idx = Object.keys(state.params).indexOf(name);
+    const card = $$('#paramList .pcard')[idx];
+    if (!card) return;
+    const p = state.params[name];
+    const v = card.querySelector('.pval'), s = card.querySelector('.pslider');
+    if (v) v.value = fmt(p.value, 6);
+    if (s) s.value = Math.round(p.t * 1000);
+  }
+  function animTick(ts){
+    const anim = state.anim;
+    if (!anim.on) return;
+    const tr = state.trace;
+    const p = state.params[tr.param];
+    if (!p){ stopAnim(); return; }
+    if (!anim.t0) anim.t0 = ts;
+    const dur = Math.max(600, anim.duration);
+    const ph = ((ts - anim.t0) % dur) / dur;
+    const tri = anim.pingpong ? (ph < 0.5 ? ph * 2 : (1 - ph) * 2) : ph;
+    p.value = tr.start + (tr.end - tr.start) * tri;
+    p.t = valueToT(p, p.value);
+    updateLiveParamUI(tr.param);
+    draw();
+    anim.raf = requestAnimationFrame(animTick);
+  }
+  function playAnim(silent){
+    const tr = state.trace;
+    if (!tr.param || !state.params[tr.param]){ if (!silent) toast('请先在轨迹面板选择「扫参」参数'); return; }
+    if (!isFinite(tr.start) || !isFinite(tr.end)){ if (!silent) toast('请先设置起点与终点'); return; }
+    state.anim.on = true; state.anim.t0 = 0;
+    if (state.anim.raf) cancelAnimationFrame(state.anim.raf);
+    state.anim.raf = requestAnimationFrame(animTick);
+    const ap = $('#animPlay'); if (ap) ap.classList.add('on');
+    if (!silent) toast('▶ 动态演示：' + tr.param + ' 在 ' + fmt(tr.start,3) + ' ↔ ' + fmt(tr.end,3) + ' 间' + (state.anim.pingpong ? '往返' : '循环'), 'ok');
+  }
+  function stopAnim(){
+    state.anim.on = false; state.anim.t0 = 0;
+    if (state.anim.raf) cancelAnimationFrame(state.anim.raf);
+    state.anim.raf = null;
+    const ap = $('#animPlay'); if (ap) ap.classList.remove('on');
+  }
+  $('#animPlay').addEventListener('click', () => playAnim(false));
+  $('#animStop').addEventListener('click', () => { stopAnim(); toast('已停止动态演示'); });
+  $('#traceDur').addEventListener('change', () => { state.anim.duration = clamp(parseInt($('#traceDur').value) || 4000, 600, 30000); });
+  $('#tracePingpong').addEventListener('change', () => { state.anim.pingpong = $('#tracePingpong').checked; });
+
   /* ---------- AI 实时控制：执行结构化指令 ---------- */
   function execActions(list){
     const done = [];
+    let wantPlay = false;
     for (const a of list){
       try {
         if (a.op === 'setFunc'){
@@ -1798,6 +1972,18 @@
           $('#tracePanel').classList.add('show'); $('#btnTrace').classList.add('on');
           syncTraceControls();
           done.push('轨迹 ' + (state.trace.param||'-') + ' ' + fmt(state.trace.start,3) + '→' + fmt(state.trace.end,3));
+        } else if (a.op === 'animate'){
+          if (a.param && state.params[a.param]) state.trace.param = a.param;
+          if (isFinite(a.from)) state.trace.start = +a.from;
+          if (isFinite(a.to)) state.trace.end = +a.to;
+          if (isFinite(a.duration)) state.anim.duration = clamp(+a.duration, 600, 30000);
+          if (typeof a.pingpong === 'boolean') state.anim.pingpong = a.pingpong;
+          state.trace.on = true;
+          $('#tracePanel').classList.add('show'); $('#btnTrace').classList.add('on');
+          wantPlay = true;
+          done.push('动态演示 ' + (state.trace.param||'-') + ' ' + fmt(state.trace.start,3) + ' ↔ ' + fmt(state.trace.end,3));
+        } else if (a.op === 'stopAnim'){
+          stopAnim(); done.push('停止演示');
         } else if (a.op === 'reset'){
           state.view = { cx:0, cy:0, scale:70 };
           updateZoomUI(); done.push('重置');
@@ -1806,6 +1992,7 @@
     }
     rebuildParams(true);
     renderFnList(); renderParams(); draw();
+    if (wantPlay) playAnim(true);
     return done;
   }
   function extractActions(text){
