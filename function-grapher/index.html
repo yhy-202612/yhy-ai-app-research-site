@@ -172,6 +172,37 @@
   }
   #zoomVal{font-family:"SF Mono",monospace;font-size:11px;color:var(--muted)}
 
+  /* ---------- 轨迹面板 ---------- */
+  .floatpanel{
+    position:absolute;top:10px;right:60px;z-index:6;width:280px;max-height:calc(100% - 20px);
+    background:rgba(22,27,34,.96);backdrop-filter:blur(10px);border:1px solid var(--border);
+    border-radius:12px;box-shadow:var(--shadow);overflow:hidden;display:none;flex-direction:column;
+  }
+  .floatpanel.show{display:flex}
+  .fp-head{display:flex;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid var(--border);font-weight:700;font-size:13px}
+  .fp-body{padding:12px;overflow-y:auto;display:flex;flex-direction:column;gap:11px}
+  .fp-row{display:flex;align-items:center;gap:8px}
+  .fp-row label{font-size:11.5px;color:var(--muted);flex:0 0 auto;min-width:52px}
+  .fp-row input[type=number],.fp-row input[type=text],.fp-row select{
+    flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:7px;
+    padding:5px 8px;font-size:12.5px;min-width:0;font-family:inherit;
+  }
+  .fp-row input:focus,.fp-row select:focus{outline:none;border-color:var(--accent)}
+  .fp-sub{font-size:10.5px;color:var(--muted2);line-height:1.55}
+  .fp-sub b{color:var(--muted)}
+  .seg{display:flex;border:1px solid var(--border);border-radius:8px;overflow:hidden}
+  .seg button{
+    flex:1;background:transparent;border:none;color:var(--muted);padding:6px 4px;font-size:12px;cursor:pointer;
+    border-right:1px solid var(--border);transition:.15s;
+  }
+  .seg button:last-child{border-right:none}
+  .seg button.on{background:#132235;color:var(--accent)}
+  .seg button:hover{background:#1b232e;color:var(--text)}
+  .trace-badge{
+    display:inline-flex;align-items:center;gap:4px;font-size:10px;color:#3fb950;background:#0f2417;
+    border:1px solid #1f4a2e;border-radius:20px;padding:2px 8px;margin-left:6px;
+  }
+
   /* ---------- AI panel ---------- */
   #ai{
     width:400px;flex:0 0 400px;background:var(--panel);border-left:1px solid var(--border);
@@ -332,8 +363,11 @@
           <button class="iconbtn on" id="btnTicks" title="刻度">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 3v18M4 7h4M4 12h2M4 17h4M18 3v18M16 7h4M18 12h2M18 17h4"/></svg>
           </button>
-          <button class="iconbtn on" id="btnDeriv" title="切线/导数">
+          <button class="iconbtn" id="btnDeriv" title="切线/导数">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19c4 0 6-14 16-14"/><path d="M4 19l16-8" stroke-dasharray="3 3"/></svg>
+          </button>
+          <button class="iconbtn" id="btnTrace" title="轨迹模式（扫参 → 点轨迹 / 面轨迹）">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 17c4-8 8-8 12 0s6 8 6 8"/><circle cx="7" cy="11.5" r="1.6"/><circle cx="13" cy="14.5" r="1.6"/><circle cx="18" cy="19" r="1.6"/></svg>
           </button>
           <button class="iconbtn" id="btnZoomIn" title="放大">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M11 8v6M8 11h6M20 20l-3.5-3.5"/></svg>
@@ -347,6 +381,64 @@
           <input type="range" id="zoomSlider" min="0" max="1000" value="500">
           <div id="zoomVal">1.0×</div>
         </div>
+
+        <div id="tracePanel" class="floatpanel">
+          <div class="fp-head">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:15px;height:15px"><path d="M3 17c4-8 8-8 12 0s6 8 6 8"/><circle cx="7" cy="11.5" r="1.6"/><circle cx="13" cy="14.5" r="1.6"/><circle cx="18" cy="19" r="1.6"/></svg>
+            轨迹模式
+            <div class="spacer"></div>
+            <button class="iconbtn" id="traceClose" style="width:24px;height:24px" title="关闭">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg>
+            </button>
+          </div>
+          <div class="fp-body">
+            <div class="fp-row">
+              <label>扫参</label>
+              <select id="traceParam"></select>
+            </div>
+            <div>
+              <div class="fp-row" style="margin-bottom:2px"><label>起点</label><input id="traceStart" type="number" step="any"></div>
+              <input type="range" id="traceStartR" min="0" max="1000" value="0">
+            </div>
+            <div>
+              <div class="fp-row" style="margin-bottom:2px"><label>终点</label><input id="traceEnd" type="number" step="any"></div>
+              <input type="range" id="traceEndR" min="0" max="1000" value="1000">
+            </div>
+            <div class="fp-row">
+              <label>步数</label>
+              <input id="traceSteps" type="number" min="4" max="240" value="48">
+            </div>
+            <div>
+              <div class="fp-row" style="margin-bottom:5px"><label>显示</label></div>
+              <div class="seg" id="traceKindSeg">
+                <button data-k="area" class="on">面轨迹</button>
+                <button data-k="point">点轨迹</button>
+                <button data-k="both">两者</button>
+              </div>
+            </div>
+            <div id="tracePointWrap">
+              <div class="fp-row" style="margin-bottom:5px">
+                <label>追踪点</label>
+                <select id="tracePointType">
+                  <option value="extremum">极值点</option>
+                  <option value="zero">零点</option>
+                  <option value="fixed">定点 x₀</option>
+                </select>
+              </div>
+              <div class="fp-row" id="traceX0Row" style="display:none">
+                <label>x₀</label><input id="traceX0" type="number" step="any" value="0">
+              </div>
+            </div>
+            <div class="fp-row">
+              <label>颜色</label>
+              <input type="color" id="traceColor" value="#f0883e" style="flex:0 0 44px;height:26px;padding:0;border:1px solid var(--border);border-radius:6px;background:var(--bg)">
+              <label style="min-width:auto">面透明度</label>
+              <input id="traceAlpha" type="range" min="0.05" max="0.6" step="0.01" value="0.22" style="flex:1">
+            </div>
+            <div class="fp-sub">让选定参数在「起点 → 终点」间连续变化：画出曲线族扫过的<b>面轨迹</b>（区域），以及某特征点随参数移动形成的<b>点轨迹</b>（曲线）。起终点可直接拖动滑条或输入数值。</div>
+          </div>
+        </div>
+
         <div class="coord" id="coord">x: 0.00 &nbsp; y: 0.00</div>
       </div>
     </section>
@@ -370,7 +462,8 @@
         <div class="chips" id="aiChips">
           <div class="chip" data-q="解释当前函数的主要性质（定义域、值域、周期、单调性、渐近线）">分析当前函数</div>
           <div class="chip" data-q="给出一个能展示振幅、频率、相位变化的含参正弦函数表达式">含参正弦函数</div>
-          <div class="chip" data-q="指数模式的滑动条是怎么映射参数值的？">指数模式原理</div>
+          <div class="chip" data-q="把参数 a 调到 2，并把所有参数的范围设为 -5 到 5">调整参数（实时控制）</div>
+          <div class="chip" data-q="讲解轨迹模式，并让参数 a 从 -2 扫到 2 显示面轨迹">演示轨迹</div>
         </div>
         <textarea id="aiInput" rows="1" placeholder="问问我关于函数与图像的问题…（Enter 发送，Shift+Enter 换行）"></textarea>
         <div class="airow">
@@ -593,6 +686,11 @@
     view: { cx: 0, cy: 0, scale: 70 },
     showGrid: true, showTicks: true, showDeriv: false,
     colors: ['#58a6ff','#3fb950','#f0883e','#db61a2','#a371f7','#39c5cf','#e3b341','#ff7b72'],
+    trace: {
+      on: false, param: null, start: -1, end: 1, steps: 48,
+      kind: 'area', pointType: 'extremum', x0: 0,
+      color: '#f0883e', alpha: 0.22
+    },
   };
 
   function newParam(name){
@@ -774,6 +872,12 @@
     if (state.showDeriv){
       drawDerivative(names, pv);
     }
+
+    // 轨迹模式（扫参 → 面轨迹 / 点轨迹）
+    const tr = state.trace;
+    if (tr.on && tr.param && state.params[tr.param]){
+      drawTrace(names, pv);
+    }
   }
 
   let mouseWX = 0;
@@ -815,6 +919,168 @@
     ctx.fillStyle = '#e3b341';
     ctx.fillText(label, lx, ly);
     ctx.restore();
+  }
+
+  /* ---------- 轨迹（扫参 → 面轨迹 / 点轨迹）---------- */
+  // 找 |y| 最大的局部极值点
+  function findExtremum(fn, pv, xMin, xMax){
+    const N = 260;
+    let prevY = fn(xMin, pv), prevSlope = null, best = null;
+    for (let i=1;i<=N;i++){
+      const x = xMin + (xMax-xMin)*i/N;
+      const y = fn(x, pv);
+      if (!isFinite(y)){ prevY = y; prevSlope = null; continue; }
+      const slope = y - prevY;
+      if (prevSlope !== null && slope !== 0 && Math.sign(slope) !== Math.sign(prevSlope)){
+        const ex = xMin + (xMax-xMin)*(i-0.5)/N;
+        const ey = fn(ex, pv);
+        if (isFinite(ey) && (!best || Math.abs(ey) > Math.abs(best.y))) best = { x: ex, y: ey };
+      }
+      prevSlope = slope; prevY = y;
+    }
+    return best;
+  }
+  // 找第一个变号零点（二分细化）
+  function findZero(fn, pv, xMin, xMax){
+    const N = 360;
+    let prevX = xMin, prevY = fn(xMin, pv);
+    for (let i=1;i<=N;i++){
+      const x = xMin + (xMax-xMin)*i/N;
+      const y = fn(x, pv);
+      if (isFinite(prevY) && isFinite(y) && prevY !== 0 && Math.sign(prevY) !== Math.sign(y)){
+        let lo = prevX, hi = x, flo = prevY;
+        for (let k=0;k<40;k++){
+          const mid = (lo+hi)/2, fm = fn(mid, pv);
+          if (!isFinite(fm)) break;
+          if (Math.sign(fm) === Math.sign(flo)){ lo = mid; flo = fm; } else { hi = mid; }
+        }
+        return { x: (lo+hi)/2, y: 0 };
+      }
+      prevX = x; prevY = y;
+    }
+    return null;
+  }
+  function traceSeries(names){
+    const tr = state.trace;
+    const idx = names.indexOf(tr.param);
+    const base = names.map(n => state.params[n].value);
+    const N = clamp(Math.round(tr.steps) || 48, 2, 240);
+    const out = [];
+    for (let i=0;i<=N;i++){
+      const cur = base.slice();
+      cur[idx] = tr.start + (tr.end - tr.start) * (i/N);
+      out.push(cur);
+    }
+    return out;
+  }
+  function traceCurrentPoint(fn, pv, xMin, xMax){
+    const t = state.trace.pointType;
+    if (t === 'fixed') return { x: state.trace.x0, y: fn(state.trace.x0, pv) };
+    if (t === 'zero') return findZero(fn, pv, xMin, xMax);
+    return findExtremum(fn, pv, xMin, xMax);
+  }
+
+  function drawTrace(names, pv){
+    const tr = state.trace;
+    const f = visibleFuncs()[0];
+    if (!f || !f.expr.trim()) return;
+    const fn = compileExpr(f.expr, names);
+    if (!fn) return;
+    const series = traceSeries(names);
+    if (!series.length) return;
+    const xMin = sx2w(0), xMax = sx2w(W);
+
+    // ---- 面轨迹：曲线族扫过的区域 ----
+    if (tr.kind === 'area' || tr.kind === 'both'){
+      const top = new Array(W+1), bot = new Array(W+1);
+      for (let sx=0; sx<=W; sx++){
+        const wx = sx2w(sx);
+        let lo = Infinity, hi = -Infinity;
+        for (let i=0;i<series.length;i++){
+          const y = fn(wx, series[i]);
+          if (!isFinite(y)) continue;
+          if (y < lo) lo = y;
+          if (y > hi) hi = y;
+        }
+        top[sx] = isFinite(hi) ? w2sy(hi) : NaN;
+        bot[sx] = isFinite(lo) ? w2sy(lo) : NaN;
+      }
+      ctx.save();
+      ctx.globalAlpha = tr.alpha;
+      ctx.fillStyle = tr.color;
+      ctx.beginPath();
+      let started = false;
+      for (let sx=0; sx<=W; sx++){
+        const y = top[sx];
+        if (!isFinite(y)) continue;
+        if (started) ctx.lineTo(sx, y); else { ctx.moveTo(sx, y); started = true; }
+      }
+      for (let sx=W; sx>=0; sx--){
+        const y = bot[sx];
+        if (!isFinite(y)) continue;
+        if (started) ctx.lineTo(sx, y); else { ctx.moveTo(sx, y); started = true; }
+      }
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+      ctx.save();
+      ctx.strokeStyle = tr.color;
+      ctx.globalAlpha = Math.min(1, tr.alpha + 0.4);
+      ctx.lineWidth = 1.4;
+      ctx.beginPath();
+      let st = false, prev = 0;
+      for (let sx=0; sx<=W; sx++){
+        const y = top[sx];
+        if (!isFinite(y)){ st = false; continue; }
+        if (!st){ ctx.moveTo(sx, y); st = true; }
+        else if (Math.abs(y - prev) > H*1.6) ctx.moveTo(sx, y);
+        else ctx.lineTo(sx, y);
+        prev = y;
+      }
+      ctx.stroke();
+      ctx.beginPath();
+      st = false;
+      for (let sx=0; sx<=W; sx++){
+        const y = bot[sx];
+        if (!isFinite(y)){ st = false; continue; }
+        if (!st){ ctx.moveTo(sx, y); st = true; }
+        else if (Math.abs(y - prev) > H*1.6) ctx.moveTo(sx, y);
+        else ctx.lineTo(sx, y);
+        prev = y;
+      }
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // ---- 点轨迹：特征点随参数移动形成的曲线 ----
+    if (tr.kind === 'point' || tr.kind === 'both'){
+      const pts = [];
+      for (let i=0;i<series.length;i++){
+        const pt = traceCurrentPoint(fn, series[i], xMin, xMax);
+        if (pt && isFinite(pt.x) && isFinite(pt.y)) pts.push(pt);
+      }
+      if (pts.length){
+        ctx.save();
+        ctx.strokeStyle = tr.color;
+        ctx.lineWidth = 2.4; ctx.lineJoin = 'round';
+        ctx.beginPath();
+        pts.forEach((p,i) => { const sx = w2sx(p.x), sy = w2sy(p.y); i ? ctx.lineTo(sx,sy) : ctx.moveTo(sx,sy); });
+        ctx.stroke();
+        // 轨迹端点
+        ctx.fillStyle = '#fff'; ctx.strokeStyle = tr.color; ctx.lineWidth = 1.6;
+        [pts[0], pts[pts.length-1]].forEach(p => {
+          ctx.beginPath(); ctx.arc(w2sx(p.x), w2sy(p.y), 3.6, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+        });
+        // 当前参数值对应的点（高亮）
+        const cur = traceCurrentPoint(fn, pv, xMin, xMax);
+        if (cur && isFinite(cur.x) && isFinite(cur.y)){
+          ctx.fillStyle = tr.color;
+          ctx.beginPath(); ctx.arc(w2sx(cur.x), w2sy(cur.y), 5.5, 0, Math.PI*2); ctx.fill();
+          ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.6; ctx.stroke();
+        }
+        ctx.restore();
+      }
+    }
   }
 
   /* ============================================================
@@ -1045,6 +1311,7 @@
       }
       box.appendChild(card);
     });
+    if (state.trace && state.trace.on) syncTraceControls();
   }
 
   /* ============================================================
@@ -1072,12 +1339,23 @@
     return { fs, ps };
   }
 
-  const SYS_PROMPT = '你是「函数图像实验室」网站内置的数学助手。你的职责：\n' +
-    '1. 回答与函数、图像、参数、导数相关的问题，准确、简洁；\n' +
+  const SYS_PROMPT = '你是「函数图像实验室」网站内置的数学助手，并且可以直接操作这个网站。你的职责：\n' +
+    '1. 回答与函数、图像、参数、导数、轨迹相关的问题，准确、简洁；\n' +
     '2. 当用户想画某个函数时，给出可直接使用的表达式，自变量固定用 x，参数用单个小写字母（如 a,b,c,d,k,p,s），并把这行表达式用 ```expr 代码块单独包裹（可给多行，每行一个函数）；\n' +
     '3. 解释性质时覆盖：定义域、值域、周期、奇偶性、单调区间、极值、渐近线等；\n' +
     '4. 表达式请使用编程风格：乘法可省略也可写 *，幂用 ^，函数名用 sin/cos/tan/exp/log/ln/log10/sqrt/abs/asin/atan 等；\n' +
-    '5. 回答用中文，涉及公式可用行内代码，不要输出多余寒暄。';
+    '5. 回答用中文，涉及公式可用行内代码，不要输出多余寒暄；\n' +
+    '6. 【实时控制】当用户要求你"调整/设置/改变/画一下"画布时（改参数值、改范围、切换滑条模式、缩放视图、设置轨迹），在回答末尾输出一个 ```action 代码块，内含 JSON 数组，系统会自动执行。可用操作：\n' +
+    '   {"op":"setFunc","index":0,"expr":"a*sin(b*x+c)+d"} 修改第 index 条函数（从 0 开始）\n' +
+    '   {"op":"addFunc","expr":"k*x^2"} 新增一条函数\n' +
+    '   {"op":"clearFuncs"} 清空函数\n' +
+    '   {"op":"setParam","name":"a","value":2} 设置某参数的值\n' +
+    '   {"op":"setRange","names":["a","b"],"min":-1,"max":1} 设置参数拖动范围（省略 names 表示全部参数）\n' +
+    '   {"op":"setMode","name":"b","mode":"exp"} 切换滑条模式：linear/exp/custom（custom 可加 "expr":"sin(t*PI)" 指定映射函数，t∈[0,1] 为滑块位置）\n' +
+    '   {"op":"setView","cx":0,"cy":0,"scale":80} 设置视图中心世界坐标与缩放\n' +
+    '   {"op":"setTrace","param":"a","start":-3,"end":3,"steps":48,"kind":"area|point|both","pointType":"extremum|zero|fixed","x0":0} 设置轨迹模式\n' +
+    '   {"op":"reset"} 重置视图与参数\n' +
+    '7. 只输出确实需要的指令；解释文字放正文，指令放代码块，不要在正文中重复指令内容。';
 
   async function aiCall(userText, onDelta){
     const { fs, ps } = currentFuncsContext();
@@ -1223,13 +1501,26 @@
         const full = await aiCall(text, (partial) => {
           if (partial.length - last.length > 6 || partial.length < last.length){
             last = partial;
-            b.innerHTML = mdToHtml(partial);
+            b.innerHTML = mdToHtml(stripActions(partial));
             $('#msgs').scrollTop = $('#msgs').scrollHeight;
           }
         });
-        b.innerHTML = mdToHtml(full);
+        const display = stripActions(full);
+        b.innerHTML = mdToHtml(display);
         pushMsg('ai', full);
-        const blocks = extractExprBlocks(full);
+        // 实时控制：解析并执行 action 指令
+        const acts = extractActions(full);
+        if (acts.length){
+          const done = execActions(acts);
+          if (done.length){
+            const note = document.createElement('div');
+            note.className = 'applybtn';
+            note.style.borderColor = '#1f4a2e'; note.style.color = '#3fb950'; note.style.background = '#0f2417';
+            note.textContent = '⚡ 已实时执行 ' + done.length + ' 项：' + done.join('、');
+            b.parentElement.appendChild(note);
+          }
+        }
+        const blocks = extractExprBlocks(display);
         if (blocks.length){
           const wrap = b.parentElement;
           blocks.forEach(exprs => {
@@ -1370,6 +1661,164 @@
     toast('已把 ' + n + ' 个参数的范围设为 ' + fmt(lo,4) + ' ~ ' + fmt(hi,4), 'ok');
   });
   $('#rangeModal').addEventListener('click', e => { if (e.target.id === 'rangeModal') $('#rangeModal').classList.remove('show'); });
+
+  /* ---------- 轨迹面板交互 ---------- */
+  function syncTraceControls(){
+    const tr = state.trace;
+    const names = Object.keys(state.params);
+    const sel = $('#traceParam');
+    if (!tr.param || names.indexOf(tr.param) < 0) tr.param = names[0] || null;
+    sel.innerHTML = names.length
+      ? names.map(n => '<option value="'+n+'"'+(n===tr.param?' selected':'')+'>'+n+'</option>').join('')
+      : '<option value="">（无参数）</option>';
+    sel.value = tr.param || '';
+    const p = state.params[tr.param];
+    if (p){
+      const span = (p.max - p.min) || 1;
+      const valid = isFinite(tr.start) && isFinite(tr.end);
+      if (!valid || tr.start < p.min || tr.start > p.max) tr.start = p.min + span*0.2;
+      if (!valid || tr.end < p.min || tr.end > p.max) tr.end = p.min + span*0.8;
+      $('#traceStart').value = fmt(tr.start, 6);
+      $('#traceEnd').value = fmt(tr.end, 6);
+      $('#traceStartR').value = Math.round((tr.start - p.min)/span*1000);
+      $('#traceEndR').value = Math.round((tr.end - p.min)/span*1000);
+    }
+    $('#traceSteps').value = tr.steps;
+    $('#tracePointType').value = tr.pointType;
+    $('#traceX0').value = tr.x0;
+    $('#traceColor').value = tr.color;
+    $('#traceAlpha').value = tr.alpha;
+    $('#traceX0Row').style.display = tr.pointType === 'fixed' ? 'flex' : 'none';
+    $$('#traceKindSeg button').forEach(b => b.classList.toggle('on', b.dataset.k === tr.kind));
+  }
+  function bindTraceNums(){
+    const tr = state.trace;
+    const p = state.params[tr.param];
+    if (p){
+      const span = (p.max - p.min) || 1;
+      const s = clamp(parseFloat($('#traceStart').value), p.min, p.max);
+      const e = clamp(parseFloat($('#traceEnd').value), p.min, p.max);
+      if (isFinite(s)) tr.start = s;
+      if (isFinite(e)) tr.end = e;
+      $('#traceStartR').value = Math.round((tr.start - p.min)/span*1000);
+      $('#traceEndR').value = Math.round((tr.end - p.min)/span*1000);
+    }
+    tr.steps = clamp(parseInt($('#traceSteps').value) || 48, 2, 240);
+    tr.pointType = $('#tracePointType').value;
+    const x0 = parseFloat($('#traceX0').value); tr.x0 = isFinite(x0) ? x0 : 0;
+    tr.color = $('#traceColor').value;
+    const al = parseFloat($('#traceAlpha').value); tr.alpha = isFinite(al) ? al : 0.22;
+    $('#traceX0Row').style.display = tr.pointType === 'fixed' ? 'flex' : 'none';
+  }
+  function openTrace(){
+    $('#tracePanel').classList.add('show'); $('#btnTrace').classList.add('on');
+    state.trace.on = true; syncTraceControls(); draw();
+  }
+  function closeTrace(){
+    $('#tracePanel').classList.remove('show'); $('#btnTrace').classList.remove('on');
+    state.trace.on = false; draw();
+  }
+  $('#btnTrace').addEventListener('click', () => {
+    if ($('#tracePanel').classList.contains('show')) closeTrace(); else openTrace();
+  });
+  $('#traceClose').addEventListener('click', closeTrace);
+  $('#traceParam').addEventListener('change', () => {
+    state.trace.param = $('#traceParam').value;
+    const p = state.params[state.trace.param];
+    if (p){ state.trace.start = p.min + (p.max-p.min)*0.2; state.trace.end = p.min + (p.max-p.min)*0.8; }
+    syncTraceControls(); draw();
+  });
+  $('#traceStartR').addEventListener('input', e => {
+    const p = state.params[state.trace.param]; if (!p) return;
+    state.trace.start = p.min + (p.max-p.min)*(+e.target.value/1000);
+    $('#traceStart').value = fmt(state.trace.start,6); draw();
+  });
+  $('#traceEndR').addEventListener('input', e => {
+    const p = state.params[state.trace.param]; if (!p) return;
+    state.trace.end = p.min + (p.max-p.min)*(+e.target.value/1000);
+    $('#traceEnd').value = fmt(state.trace.end,6); draw();
+  });
+  ['#traceStart','#traceEnd','#traceSteps','#traceX0'].forEach(sel => {
+    $(sel).addEventListener('change', () => { bindTraceNums(); draw(); });
+  });
+  ['#tracePointType','#traceColor','#traceAlpha'].forEach(sel => {
+    $(sel).addEventListener('change', () => { bindTraceNums(); draw(); });
+    $(sel).addEventListener('input', () => { bindTraceNums(); draw(); });
+  });
+  $$('#traceKindSeg button').forEach(b => b.addEventListener('click', () => {
+    state.trace.kind = b.dataset.k;
+    $$('#traceKindSeg button').forEach(x => x.classList.toggle('on', x === b));
+    bindTraceNums(); draw();
+  }));
+
+  /* ---------- AI 实时控制：执行结构化指令 ---------- */
+  function execActions(list){
+    const done = [];
+    for (const a of list){
+      try {
+        if (a.op === 'setFunc'){
+          const f = state.funcs[a.index|0];
+          if (f && typeof a.expr === 'string'){ f.expr = a.expr; done.push('函数'+((a.index|0)+1)+'→'+a.expr); }
+        } else if (a.op === 'addFunc'){
+          if (typeof a.expr === 'string'){ addFunc(a.expr, null, true); done.push('新增 '+a.expr); }
+        } else if (a.op === 'clearFuncs'){
+          state.funcs = []; fnSeq = 1; addFunc('x', state.colors[0], true); done.push('清空函数');
+        } else if (a.op === 'setParam'){
+          const p = state.params[a.name];
+          if (p && isFinite(a.value)){ p.value = clamp(+a.value, p.min, p.max); p.t = valueToT(p, p.value); done.push(a.name+'='+fmt(p.value,4)); }
+        } else if (a.op === 'setRange'){
+          const names = (Array.isArray(a.names) && a.names.length) ? a.names : Object.keys(state.params);
+          const lo = +a.min, hi = +a.max;
+          if (isFinite(lo) && isFinite(hi) && hi > lo){
+            names.forEach(n => { const p = state.params[n]; if (p){ p.min = lo; p.max = hi; p.value = clamp(p.value, lo, hi); p.t = valueToT(p, p.value); } });
+            done.push('范围['+names.join(',')+'] '+fmt(lo,3)+'~'+fmt(hi,3));
+          }
+        } else if (a.op === 'setMode'){
+          const p = state.params[a.name];
+          if (p && ['linear','exp','custom'].indexOf(a.mode) >= 0){
+            p.mode = a.mode;
+            if (a.mode === 'custom' && typeof a.expr === 'string') p.customExpr = a.expr;
+            p.t = valueToT(p, p.value);
+            done.push(a.name+'→'+(a.mode==='linear'?'线性':a.mode==='exp'?'指数':'指定函数'));
+          }
+        } else if (a.op === 'setView'){
+          if (isFinite(a.cx)) state.view.cx = +a.cx;
+          if (isFinite(a.cy)) state.view.cy = +a.cy;
+          if (isFinite(a.scale)) state.view.scale = clamp(+a.scale, ZMIN, ZMAX);
+          updateZoomUI(); done.push('视图');
+        } else if (a.op === 'setTrace'){
+          if (a.param && state.params[a.param]) state.trace.param = a.param;
+          if (isFinite(a.start)) state.trace.start = +a.start;
+          if (isFinite(a.end)) state.trace.end = +a.end;
+          if (isFinite(a.steps)) state.trace.steps = clamp(+a.steps, 2, 240);
+          if (a.kind) state.trace.kind = a.kind;
+          if (a.pointType) state.trace.pointType = a.pointType;
+          if (isFinite(a.x0)) state.trace.x0 = +a.x0;
+          state.trace.on = true;
+          $('#tracePanel').classList.add('show'); $('#btnTrace').classList.add('on');
+          syncTraceControls();
+          done.push('轨迹 ' + (state.trace.param||'-') + ' ' + fmt(state.trace.start,3) + '→' + fmt(state.trace.end,3));
+        } else if (a.op === 'reset'){
+          state.view = { cx:0, cy:0, scale:70 };
+          updateZoomUI(); done.push('重置');
+        }
+      } catch(e){ /* 单条失败不影响其余 */ }
+    }
+    rebuildParams(true);
+    renderFnList(); renderParams(); draw();
+    return done;
+  }
+  function extractActions(text){
+    const out = [];
+    const re = /```action\s*\n?([\s\S]*?)```/gi;
+    let m;
+    while ((m = re.exec(text))){
+      try { const arr = JSON.parse(m[1].trim()); if (Array.isArray(arr)) out.push.apply(out, arr); }
+      catch(e){ /* 忽略非法 JSON */ }
+    }
+    return out;
+  }
+  function stripActions(s){ return String(s||'').replace(/```action[\s\S]*?(```|$)/gi, '').trim(); }
 
   window.addEventListener('resize', resize);
 
