@@ -77,18 +77,31 @@
   .iconbtn.danger:hover{color:var(--danger);border-color:#5d2b2b;background:#2a1b1b}
   .iconbtn svg{width:14px;height:14px}
 
-  /* function row */
-  .fnrow{display:flex;align-items:center;gap:8px;margin-bottom:8px}
-  .fnrow .swatch{width:14px;height:14px;border-radius:50%;flex:0 0 auto;box-shadow:0 0 8px currentColor}
-  .fnrow input.fexpr{
-    flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);
-    padding:7px 9px;border-radius:8px;font-family:"SF Mono",ui-monospace,Consolas,monospace;font-size:13px;
-    min-width:0;
+  /* function item */
+  .fnitem{background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:9px 10px;margin-bottom:9px}
+  .fnrow{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+  .fnrow .swatch{width:13px;height:13px;border-radius:50%;flex:0 0 auto;box-shadow:0 0 8px currentColor}
+  .fnrow .ftype{
+    flex:1;background:var(--bg);border:1px solid var(--border);color:var(--muted);border-radius:7px;
+    padding:4px 6px;font-size:12px;cursor:pointer;min-width:0;
   }
-  .fnrow input.fexpr:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 2px rgba(88,166,255,.18)}
-  .fnrow input.fexpr.err{border-color:var(--danger)}
+  .fnrow .ftype:focus{outline:none;border-color:var(--accent)}
   .fnrow .eye{cursor:pointer;color:var(--muted);flex:0 0 auto;display:grid;place-items:center;width:20px}
   .fnrow .eye svg{width:15px;height:15px}
+  .fnrow2{display:flex;align-items:center;gap:6px;margin-bottom:5px}
+  .fnrow2 .lbl{font-family:"SF Mono",monospace;font-size:11.5px;color:var(--muted2);flex:0 0 auto;white-space:nowrap}
+  .fnrow2 input.fexpr,.fnrow2 input.fexpr2{
+    flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);
+    padding:6px 8px;border-radius:7px;font-family:"SF Mono",ui-monospace,Consolas,monospace;font-size:12.5px;min-width:0;
+  }
+  .fnrow2 input.fexpr:focus,.fnrow2 input.fexpr2:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 2px rgba(88,166,255,.18)}
+  .fnrow2 input.fexpr.err{border-color:var(--danger)}
+  .fnrow2 input.ftmin,.fnrow2 input.ftmax{
+    width:66px;background:var(--bg);border:1px solid var(--border);color:var(--muted);border-radius:6px;
+    padding:4px 6px;font-size:11px;font-family:"SF Mono",monospace;text-align:center;flex:0 0 auto;
+  }
+  .fnrow2 input.ftmin:focus,.fnrow2 input.ftmax:focus{outline:none;border-color:var(--accent);color:var(--text)}
+  .fnhint{font-size:10.5px;color:var(--muted2);line-height:1.45;margin-top:2px}
 
   /* param card */
   #paramList{overflow-y:auto;flex:1;min-height:0}
@@ -350,7 +363,7 @@
           </button>
         </div>
         <div id="fnList"></div>
-        <div class="mini" style="margin-top:2px">自变量为 <b>x</b>；支持 60+ 函数与常量（sin/cos/tan/cot/exp/ln/lg/log/sqrt/cbrt/abs/floor/gamma/mod/nthroot…）。
+        <div class="mini" style="margin-top:2px">每条曲线可切换 <b>y=f(x) / 参数方程 / 极坐标 / 隐函数</b>（多值曲线）；支持 60+ 函数与常量。
           <a href="javascript:void(0)" id="fnHelp" style="color:var(--accent);text-decoration:none">函数参考 ▸</a></div>
       </div>
       <div class="sec" style="padding-bottom:6px;border-bottom:none">
@@ -490,6 +503,7 @@
           <div class="chip" data-q="把参数 a 调到 2，并把所有参数的范围设为 -5 到 5">调整参数（实时控制）</div>
           <div class="chip" data-q="讲解轨迹模式，并让参数 a 从 -2 扫到 2 显示面轨迹">演示轨迹</div>
           <div class="chip" data-q="播放动态演示：让参数 a 从 -3 到 3 往返变化">动态演示</div>
+          <div class="chip" data-q="画一个单位圆和一条心形线（多值曲线）">多值曲线</div>
         </div>
         <textarea id="aiInput" rows="1" placeholder="问问我关于函数与图像的问题…（Enter 发送，Shift+Enter 换行）"></textarea>
         <div class="airow">
@@ -580,6 +594,10 @@
       <div><b>常量</b>：PI（π） · E · TAU（2π） · phi（黄金比）</div>
       <div><b>分段函数</b>：用三元表达式，如 <code>x&gt;0?x:-x</code> 或 <code>x&lt;1?x:x^2</code></div>
       <div><b>隐式乘法</b>：<code>2x</code>、<code>3sin(x)</code>、<code>(x+1)(x-1)</code> 都可直接写</div>
+      <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">
+        <b style="color:var(--accent)">曲线类型（多值曲线）</b>：每条曲线左上角可切换 ——
+        <b>y=f(x)</b>（一个 x 一个 y）；<b>参数方程</b> x(t)、y(t)；<b>极坐标</b> r(θ)（θ 用 t 表示）；<b>隐函数</b> F(x,y)=0（自动绘制等值线，可画圆、椭圆、双曲线、心形线等"一个 x 对应多个 y"的图形）。
+      </div>
     </div>
     <div class="foot"><button class="hbtn primary" id="fnHelpClose">知道了</button></div>
   </div>
@@ -649,7 +667,7 @@
   Object.keys(EXTRA_FUNCS).forEach(k => { FUNC_MAP[k] = EXTRA_FUNCS[k]; });
   const FUNC_NAMES = Object.keys(FUNC_MAP);
   const FUNC_VALS = FUNC_NAMES.map(k => FUNC_MAP[k]);
-  const RESERVED = new Set(['x', 't', 'pi'].concat(FUNC_NAMES));
+  const RESERVED = new Set(['x', 'y', 't', 'pi'].concat(FUNC_NAMES));
 
   let toastTimer = null;
   function toast(msg, kind){
@@ -687,24 +705,27 @@
     return s;
   }
 
+  // 通用编译：argNames 为自变量（如 ['x'] / ['t'] / ['x','y']）
   const compileCache = new Map();
-  function compileExpr(expr, paramNames){
-    const key = expr + '|' + paramNames.join(',');
+  function makeFn(expr, argNames, paramNames){
+    const key = argNames.join(',') + '\u2039' + expr + '\u203a' + paramNames.join(',');
     if (compileCache.has(key)) return compileCache.get(key);
     let fn = null;
     try {
       const body = '"use strict";return (' + preprocess(expr) + ');';
-      fn = new Function('x', ...paramNames, ...FUNC_NAMES, body);
+      fn = new Function(...argNames, ...paramNames, ...FUNC_NAMES, body);
     } catch(e){
       fn = null;
     }
-    const wrapped = fn ? ((x, pv) => {
-      try { return fn(x, ...pv, ...FUNC_VALS); }
+    const wrapped = fn ? ((argVals, pv) => {
+      try { return fn.apply(null, argVals.concat(pv, FUNC_VALS)); }
       catch(e){ return NaN; }
     }) : null;
     compileCache.set(key, wrapped);
     return wrapped;
   }
+  // 常用包装：y = f(x)
+  function compileExpr(expr, paramNames){ return makeFn(expr, ['x'], paramNames); }
 
   const customCache = new Map();
   function evalCustom(expr, t){
@@ -810,36 +831,58 @@
    *  3. 数据同步
    * ============================================================ */
   let fnSeq = 1;
-  function addFunc(expr, color, silent){
-    state.funcs.push({
+  const TAU_VAL = 6.283185307179586;
+  function newFunc(expr, color, type){
+    return {
       id: 'f' + (fnSeq++),
-      expr: expr,
+      type: type || 'y',
+      expr: expr || '',
+      expr2: '',
+      tmin: 0, tmax: TAU_VAL,
       color: color || state.colors[(state.funcs.length) % state.colors.length],
       visible: true,
-    });
+    };
+  }
+  function addFunc(expr, color, silent, type){
+    state.funcs.push(newFunc(expr, color, type));
     rebuildParams(true);
     if (!silent){ renderFnList(); renderParams(); }
   }
 
+  // 各曲线用到的表达式（用于提取参数）
+  function allExpressions(){
+    const out = [];
+    for (const f of state.funcs){
+      if (f.expr) out.push(f.expr);
+      if (f.type === 'param' && f.expr2) out.push(f.expr2);
+    }
+    return out;
+  }
   // 根据当前所有函数表达式重建参数集合（保留已有参数的当前值/设置）
   function rebuildParams(keepValues){
-    const names = extractParams(state.funcs.map(f => f.expr));
+    const names = extractParams(allExpressions());
     const next = {};
-    for (const n of names){
-      if (keepValues && state.params[n]) { next[n] = state.params[n]; }
-      else if (state.params[n]) { next[n] = state.params[n]; }
-      else { next[n] = makeParamWithValue(n, 1); }
-    }
+    for (const n of names){ next[n] = state.params[n] || makeParamWithValue(n, 1); }
     state.params = next;
   }
 
   function visibleFuncs(){ return state.funcs.filter(f => f.visible); }
 
+  // 曲线自变量：y→[x]，参数/极坐标→[t]，隐函数→[x,y]
+  function funcArgs(f){
+    return f.type === 'param' ? ['t'] : f.type === 'polar' ? ['t'] : f.type === 'implicit' ? ['x', 'y'] : ['x'];
+  }
+  function funcCompiled(f, names){
+    if (!f.expr || !f.expr.trim()) return false;
+    if (!makeFn(f.expr, funcArgs(f), names)) return false;
+    if (f.type === 'param' && (!f.expr2 || !f.expr2.trim() || !makeFn(f.expr2, ['t'], names))) return false;
+    return true;
+  }
   function anyCompileError(){
     const names = Object.keys(state.params);
     for (const f of state.funcs){
       if (!f.expr.trim()) continue;
-      if (!compileExpr(f.expr, names)) return true;
+      if (!funcCompiled(f, names)) return true;
     }
     return false;
   }
@@ -940,33 +983,17 @@
       if (ax>=0&&ax<=H&&ay>=0&&ay<=W){ ctx.textAlign='right'; ctx.textBaseline='top'; ctx.fillText('O', ay-5, ax+5); }
     }
 
-    // 曲线
+    // 曲线（显函数 / 参数方程 / 极坐标 / 隐函数）
     const names = Object.keys(state.params);
     const pv = names.map(n => state.params[n].value);
     for (const f of state.funcs){
       if (!f.visible || !f.expr.trim()) continue;
-      const fn = compileExpr(f.expr, names);
-      if (!fn) continue;
+      if (!funcCompiled(f, names)) continue;
       ctx.strokeStyle = f.color;
       ctx.lineWidth = 2.2;
       ctx.lineJoin = 'round';
-      ctx.beginPath();
-      let started = false, prevSy = 0;
-      for (let sx = 0; sx <= W; sx += 1){
-        const wx = sx2w(sx);
-        const wy = fn(wx, pv);
-        if (!isFinite(wy)){ started = false; continue; }
-        const sy = w2sy(wy);
-        if (!started){ ctx.moveTo(sx, sy); started = true; }
-        else {
-          // 断裂检测（渐近线）
-          if (Math.abs(sy - prevSy) > H*1.6){ ctx.moveTo(sx, sy); }
-          else { ctx.lineTo(sx, sy); }
-        }
-        prevSy = sy;
-        if (sy < -H*3 || sy > H*4) started = false;
-      }
-      ctx.stroke();
+      ctx.lineCap = 'round';
+      drawCurve(f, names, pv);
     }
 
     // 导数/切线（对第一条可见函数，在鼠标 x 处）
@@ -981,11 +1008,129 @@
     }
   }
 
+  // 单条曲线绘制（按类型分发）
+  function drawCurve(f, names, pv){
+    if (f.type === 'param') return drawParamCurve(f, names, pv);
+    if (f.type === 'polar') return drawPolarCurve(f, names, pv);
+    if (f.type === 'implicit') return drawImplicitCurve(f, names, pv);
+    return drawExplicitCurve(f, names, pv);
+  }
+  // y = f(x)
+  function drawExplicitCurve(f, names, pv){
+    const fn = makeFn(f.expr, ['x'], names);
+    if (!fn) return;
+    ctx.beginPath();
+    let started = false, prevSy = 0;
+    for (let sx = 0; sx <= W; sx += 1){
+      const wy = fn([sx2w(sx)], pv);
+      if (!isFinite(wy)){ started = false; continue; }
+      const sy = w2sy(wy);
+      if (!started){ ctx.moveTo(sx, sy); started = true; }
+      else if (Math.abs(sy - prevSy) > H * 1.6){ ctx.moveTo(sx, sy); }
+      else { ctx.lineTo(sx, sy); }
+      prevSy = sy;
+      if (sy < -H*3 || sy > H*4) started = false;
+    }
+    ctx.stroke();
+  }
+  // 参数方程 x=f(t), y=g(t)
+  function drawParamCurve(f, names, pv){
+    const fx = makeFn(f.expr, ['t'], names);
+    const fy = makeFn(f.expr2, ['t'], names);
+    if (!fx || !fy) return;
+    const N = 1400;
+    const lim = Math.hypot(W, H) * 0.6;
+    ctx.beginPath();
+    let started = false, px = 0, py = 0;
+    for (let i = 0; i <= N; i++){
+      const t = f.tmin + (f.tmax - f.tmin) * (i / N);
+      const x = fx([t], pv), y = fy([t], pv);
+      if (!isFinite(x) || !isFinite(y)){ started = false; continue; }
+      const sx = w2sx(x), sy = w2sy(y);
+      if (!started){ ctx.moveTo(sx, sy); started = true; }
+      else if (Math.hypot(sx - px, sy - py) > lim){ ctx.moveTo(sx, sy); }
+      else { ctx.lineTo(sx, sy); }
+      px = sx; py = sy;
+    }
+    ctx.stroke();
+  }
+  // 极坐标 r = f(θ)，t 表示 θ
+  function drawPolarCurve(f, names, pv){
+    const fr = makeFn(f.expr, ['t'], names);
+    if (!fr) return;
+    const N = 1800;
+    const lim = Math.hypot(W, H) * 0.6;
+    ctx.beginPath();
+    let started = false, px = 0, py = 0;
+    for (let i = 0; i <= N; i++){
+      const th = f.tmin + (f.tmax - f.tmin) * (i / N);
+      const r = fr([th], pv);
+      if (!isFinite(r)){ started = false; continue; }
+      const sx = w2sx(r * Math.cos(th)), sy = w2sy(r * Math.sin(th));
+      if (!started){ ctx.moveTo(sx, sy); started = true; }
+      else if (Math.hypot(sx - px, sy - py) > lim){ ctx.moveTo(sx, sy); }
+      else { ctx.lineTo(sx, sy); }
+      px = sx; py = sy;
+    }
+    ctx.stroke();
+  }
+  // 隐函数 F(x,y)=0 —— Marching Squares
+  function drawImplicitCurve(f, names, pv){
+    const F = makeFn(f.expr, ['x', 'y'], names);
+    if (!F) return;
+    const step = 6;
+    const cols = Math.ceil(W / step) + 1, rows = Math.ceil(H / step) + 1;
+    const gx = [], gy = [];
+    for (let i = 0; i < cols; i++) gx.push(sx2w(i * step));
+    for (let j = 0; j < rows; j++) gy.push(sy2w(j * step));
+    const g = [];
+    for (let j = 0; j < rows; j++){
+      const row = new Array(cols);
+      for (let i = 0; i < cols; i++) row[i] = F([gx[i], gy[j]], pv);
+      g.push(row);
+    }
+    const ep = (va, vb, ax, ay, bx, by) => {
+      if ((va > 0) === (vb > 0)) return null;
+      const t = va / (va - vb);
+      return { x: ax + (bx - ax) * t, y: ay + (by - ay) * t };
+    };
+    const segs = {
+      1: ['left', 'top'], 2: ['top', 'right'], 3: ['left', 'right'], 4: ['right', 'bottom'],
+      5: ['left', 'top', 'right', 'bottom'], 6: ['top', 'bottom'], 7: ['left', 'bottom'],
+      8: ['bottom', 'left'], 9: ['bottom', 'top'], 10: ['top', 'right', 'bottom', 'left'],
+      11: ['right', 'bottom'], 12: ['right', 'left'], 13: ['right', 'top'], 14: ['top', 'left']
+    };
+    ctx.save();
+    ctx.beginPath();
+    for (let j = 0; j < rows - 1; j++){
+      for (let i = 0; i < cols - 1; i++){
+        const v0 = g[j][i], v1 = g[j][i+1], v2 = g[j+1][i+1], v3 = g[j+1][i];
+        if (!isFinite(v0) || !isFinite(v1) || !isFinite(v2) || !isFinite(v3)) continue;
+        const idx = (v0 > 0 ? 1 : 0) | (v1 > 0 ? 2 : 0) | (v2 > 0 ? 4 : 0) | (v3 > 0 ? 8 : 0);
+        if (idx === 0 || idx === 15) continue;
+        const x0 = i * step, x1 = (i + 1) * step, y0 = j * step, y1 = (j + 1) * step;
+        const P = {
+          top:    ep(v0, v1, x0, y0, x1, y0),
+          right:  ep(v1, v2, x1, y0, x1, y1),
+          bottom: ep(v2, v3, x1, y1, x0, y1),
+          left:   ep(v3, v0, x0, y1, x0, y0)
+        };
+        const sg = segs[idx];
+        for (let k = 0; k + 1 < sg.length; k += 2){
+          const pa = P[sg[k]], pb = P[sg[k+1]];
+          if (pa && pb){ ctx.moveTo(pa.x, pa.y); ctx.lineTo(pb.x, pb.y); }
+        }
+      }
+    }
+    ctx.stroke();
+    ctx.restore();
+  }
+
   let mouseWX = 0;
   function drawDerivative(names, pv){
-    const f = visibleFuncs()[0];
+    const f = visibleFuncs().find(x => x.type === 'y');
     if (!f || !f.expr.trim()) return;
-    const fn = compileExpr(f.expr, names);
+    const fn = makeFn(f.expr, ['x'], names);
     if (!fn) return;
     const x0 = mouseWX;
     const h = Math.max(1e-4, (sx2w(1) - sx2w(0)));
@@ -1083,10 +1228,11 @@
 
   function drawTrace(names, pv){
     const tr = state.trace;
-    const f = visibleFuncs()[0];
+    const f = visibleFuncs().find(x => x.type === 'y');
     if (!f || !f.expr.trim()) return;
-    const fn = compileExpr(f.expr, names);
-    if (!fn) return;
+    const fn0 = makeFn(f.expr, ['x'], names);
+    if (!fn0) return;
+    const fn = (x, p) => fn0([x], p);
     const series = traceSeries(names);
     if (!series.length) return;
     const xMin = sx2w(0), xMax = sx2w(W);
@@ -1276,40 +1422,74 @@
   /* ============================================================
    *  6. UI 构建
    * ============================================================ */
+  const TYPE_LABEL = { y: 'y=f(x)', param: '参数方程', polar: '极坐标', implicit: '隐函数' };
+  const TYPE_HINT = {
+    y: '含参显函数，如 a*sin(b*x+c)+d',
+    param: '给 x(t) 与 y(t)，一个 x 可对应多个 y（画圆/椭圆/李萨如图…）',
+    polar: 'r(θ)，θ 用 t 表示，如 1+cos(t)；θ 范围默认 0~2π',
+    implicit: 'F(x,y)=0，可画圆/椭圆/双曲线/心形线等，如 x^2+y^2-1'
+  };
+  const TYPE_PLACEHOLDER = { y: 'a*sin(b*x+c)+d', param: 'c*cos(t)', polar: '1+cos(t)', implicit: 'x^2+y^2-1' };
   function renderFnList(){
     const box = $('#fnList');
     box.innerHTML = '';
     state.funcs.forEach(f => {
-      const row = document.createElement('div');
-      row.className = 'fnrow';
-      const err = f.expr.trim() && !compileExpr(f.expr, Object.keys(state.params));
-      row.innerHTML =
-        '<span class="swatch" style="background:'+f.color+';color:'+f.color+'"></span>' +
-        '<input class="fexpr'+(err?' err':'')+'" value="'+escapeAttr(f.expr)+'" placeholder="a*sin(b*x+c)+d" spellcheck="false">' +
-        '<span class="eye" title="显示/隐藏">'+eyeSvg(f.visible)+'</span>' +
-        '<button class="iconbtn danger" title="删除" style="width:24px;height:24px">' +
-          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>';
-      const inp = row.querySelector('.fexpr');
+      const names = Object.keys(state.params);
+      const bad = !!(f.expr.trim() && !funcCompiled(f, names));
+      const isParam = f.type === 'param';
+      const hasT = f.type === 'param' || f.type === 'polar';
+      const mainLabel = f.type === 'y' ? 'y =' : f.type === 'polar' ? 'r =' : f.type === 'implicit' ? 'F =' : 'x(t) =';
+      const item = document.createElement('div');
+      item.className = 'fnitem';
+      item.innerHTML =
+        '<div class="fnrow">' +
+          '<span class="swatch" style="background:'+f.color+';color:'+f.color+'"></span>' +
+          '<select class="ftype">' +
+            ['y','param','polar','implicit'].map(t => '<option value="'+t+'"'+(f.type===t?' selected':'')+'>'+TYPE_LABEL[t]+'</option>').join('') +
+          '</select>' +
+          '<span class="eye" title="显示/隐藏">'+eyeSvg(f.visible)+'</span>' +
+          '<button class="iconbtn danger" title="删除" style="width:24px;height:24px">' +
+            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>' +
+        '</div>' +
+        '<div class="fnrow2"><span class="lbl">'+mainLabel+'</span>' +
+          '<input class="fexpr'+(bad?' err':'')+'" value="'+escapeAttr(f.expr)+'" placeholder="'+TYPE_PLACEHOLDER[f.type]+'" spellcheck="false"></div>' +
+        (isParam ? '<div class="fnrow2"><span class="lbl">y(t) =</span><input class="fexpr2" value="'+escapeAttr(f.expr2)+'" placeholder="c*sin(t)" spellcheck="false"></div>' : '') +
+        (hasT ? '<div class="fnrow2"><span class="lbl">'+(f.type==='polar'?'θ':'t')+' 范围</span>' +
+          '<input class="ftmin" type="number" step="any" value="'+f.tmin+'"><span class="lbl">~</span>' +
+          '<input class="ftmax" type="number" step="any" value="'+f.tmax+'"><span class="mini">默认 0~2π</span></div>' : '') +
+        '<div class="fnhint">'+TYPE_HINT[f.type]+'</div>';
+
+      item.querySelector('.ftype').addEventListener('change', e => {
+        f.type = e.target.value;
+        if (f.type === 'param'){ if (!f.expr.trim()) f.expr = 'cos(t)'; if (!f.expr2.trim()) f.expr2 = 'sin(t)'; }
+        rebuildParams(true); renderFnList(); renderParams(); draw();
+      });
+      const inp = item.querySelector('.fexpr');
       inp.addEventListener('input', () => {
         f.expr = inp.value;
-        rebuildParams(true);
-        renderParams();
-        draw();
-        // 实时错误态
-        const bad = f.expr.trim() && !compileExpr(f.expr, Object.keys(state.params));
-        inp.classList.toggle('err', bad);
+        rebuildParams(true); renderParams(); draw();
+        inp.classList.toggle('err', !!(f.expr.trim() && !funcCompiled(f, Object.keys(state.params))));
       });
-      row.querySelector('.eye').addEventListener('click', () => {
+      const inp2 = item.querySelector('.fexpr2');
+      if (inp2) inp2.addEventListener('input', () => { f.expr2 = inp2.value; rebuildParams(true); renderParams(); draw(); });
+      [['ftmin','tmin'], ['ftmax','tmax']].forEach(([cls, key]) => {
+        const el = item.querySelector('.' + cls);
+        if (el) el.addEventListener('change', () => {
+          const v = parseFloat(el.value);
+          if (isFinite(v)){ f[key] = v; draw(); } else { el.value = f[key]; }
+        });
+      });
+      item.querySelector('.eye').addEventListener('click', () => {
         f.visible = !f.visible;
-        row.querySelector('.eye').innerHTML = eyeSvg(f.visible);
+        item.querySelector('.eye').innerHTML = eyeSvg(f.visible);
         draw();
       });
-      row.querySelector('.iconbtn.danger').addEventListener('click', () => {
+      item.querySelector('.iconbtn.danger').addEventListener('click', () => {
         state.funcs = state.funcs.filter(x => x.id !== f.id);
         rebuildParams(true);
         renderFnList(); renderParams(); draw();
       });
-      box.appendChild(row);
+      box.appendChild(item);
     });
   }
   function eyeSvg(on){
@@ -1447,8 +1627,8 @@
     '4. 表达式请使用编程风格：乘法可省略也可写 *，幂用 ^，函数名用 sin/cos/tan/exp/log/ln/log10/sqrt/abs/asin/atan 等；\n' +
     '5. 回答用中文，涉及公式可用行内代码，不要输出多余寒暄；\n' +
     '6. 【实时控制】当用户要求你"调整/设置/改变/画一下"画布时（改参数值、改范围、切换滑条模式、缩放视图、设置轨迹），在回答末尾输出一个 ```action 代码块，内含 JSON 数组，系统会自动执行。可用操作：\n' +
-    '   {"op":"setFunc","index":0,"expr":"a*sin(b*x+c)+d"} 修改第 index 条函数（从 0 开始）\n' +
-    '   {"op":"addFunc","expr":"k*x^2"} 新增一条函数\n' +
+    '   {"op":"setFunc","index":0,"expr":"a*sin(b*x+c)+d","type":"y|param|polar|implicit","expr2":"...","tmin":0,"tmax":6.283} 修改第 index 条曲线\n' +
+    '   {"op":"addFunc","expr":"...","type":"y|param|polar|implicit","expr2":"...","tmin":0,"tmax":6.283} 新增一条曲线\n' +
     '   {"op":"clearFuncs"} 清空函数\n' +
     '   {"op":"setParam","name":"a","value":2} 设置某参数的值\n' +
     '   {"op":"setRange","names":["a","b"],"min":-1,"max":1} 设置参数拖动范围（省略 names 表示全部参数）\n' +
@@ -1459,7 +1639,8 @@
     '   {"op":"stopAnim"} 停止动态演示\n' +
     '   {"op":"reset"} 重置视图与参数\n' +
     '7. 【可用函数】sin cos tan cot sec csc、arcsin arccos arctan(或 asin acos atan)、sinh cosh tanh、exp ln lg log log2、sqrt cbrt nthroot、abs sign floor ceil round trunc frac、mod min max clamp pow hypot、gamma fact step heaviside sinc erf；常量 PI E TAU phi；支持 ^ 幂与三元表达式（如 x>0?x:-x 实现分段函数）。\n' +
-    '8. 当用户说"演示一下""动起来""看看参数变化"时，优先使用 animate 指令做动态演示。只输出确实需要的指令；解释文字放正文，指令放代码块，不要在正文里重复指令内容。';
+    '8. 【多值曲线 / 曲线类型】每条曲线有四种类型（用 "type" 字段指定）：y=f(x)（type:"y"）；参数方程（type:"param"，expr 是关于 t 的 x(t)、expr2 是 y(t)，t∈[tmin,tmax]）；极坐标（type:"polar"，expr 是 r(t)，θ=t）；隐函数（type:"implicit"，expr 是 F(x,y)，自动绘制 F=0 的等值线）。凡是"一个 x 对应多个 y"的图形（圆、椭圆、双曲线、心形线、玫瑰线、李萨如图等），都要用 param 或 implicit，不要用 y=f(x)。例如画单位圆：type:"implicit", expr:"x^2+y^2-1"；画心形线：type:"polar", expr:"1-cos(t)"。\n' +
+    '9. 当用户说"演示一下""动起来""看看参数变化"时，优先使用 animate 指令做动态演示。只输出确实需要的指令；解释文字放正文，指令放代码块，不要在正文里重复指令内容。';
 
   async function aiCall(userText, onDelta){
     const { fs, ps } = currentFuncsContext();
@@ -1932,9 +2113,23 @@
       try {
         if (a.op === 'setFunc'){
           const f = state.funcs[a.index|0];
-          if (f && typeof a.expr === 'string'){ f.expr = a.expr; done.push('函数'+((a.index|0)+1)+'→'+a.expr); }
+          if (f){
+            if (typeof a.type === 'string' && TYPE_LABEL[a.type]) f.type = a.type;
+            if (typeof a.expr === 'string') f.expr = a.expr;
+            if (typeof a.expr2 === 'string') f.expr2 = a.expr2;
+            if (isFinite(a.tmin)) f.tmin = +a.tmin;
+            if (isFinite(a.tmax)) f.tmax = +a.tmax;
+            done.push('函数' + ((a.index|0)+1) + '→' + f.expr);
+          }
         } else if (a.op === 'addFunc'){
-          if (typeof a.expr === 'string'){ addFunc(a.expr, null, true); done.push('新增 '+a.expr); }
+          if (typeof a.expr === 'string'){
+            const nf = newFunc(a.expr, null, (typeof a.type === 'string' && TYPE_LABEL[a.type]) ? a.type : 'y');
+            if (typeof a.expr2 === 'string') nf.expr2 = a.expr2;
+            if (isFinite(a.tmin)) nf.tmin = +a.tmin;
+            if (isFinite(a.tmax)) nf.tmax = +a.tmax;
+            state.funcs.push(nf);
+            done.push('新增 ' + (a.type || 'y') + '：' + a.expr);
+          }
         } else if (a.op === 'clearFuncs'){
           state.funcs = []; fnSeq = 1; addFunc('x', state.colors[0], true); done.push('清空函数');
         } else if (a.op === 'setParam'){
