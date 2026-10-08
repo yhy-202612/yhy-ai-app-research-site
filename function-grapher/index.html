@@ -311,7 +311,12 @@
       <div class="sec" style="padding-bottom:6px;border-bottom:none">
         <div class="sec-head" style="margin-bottom:6px">
           <div class="sec-title">参数</div>
-          <div class="mini" id="paramCount"></div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <div class="mini" id="paramCount"></div>
+            <button class="iconbtn" id="batchRange" title="一键设置所有参数上下限">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></svg>
+            </button>
+          </div>
         </div>
       </div>
       <div id="paramList"><div class="empty">在函数中输入形如 a·sin(b·x+c)+d 的表达式，<br>含字母的参数会自动出现在这里。</div></div>
@@ -401,6 +406,38 @@
     <div class="foot">
       <button class="hbtn" id="cfgCancel">取消</button>
       <button class="hbtn primary" id="cfgSave">保存</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="rangeModal">
+  <div class="modal">
+    <h3>🔧 一键设置所有参数上下限</h3>
+    <div class="body">
+      <div class="field">
+        <label>下限（最小值）</label>
+        <input id="rangeMin" type="number" step="any" placeholder="-5">
+      </div>
+      <div class="field">
+        <label>上限（最大值）</label>
+        <input id="rangeMax" type="number" step="any" placeholder="5">
+      </div>
+      <div class="field" style="margin-bottom:8px">
+        <label>快捷区间</label>
+        <div class="chips" style="margin-bottom:0">
+          <span class="chip" data-r="-5,5">−5 ~ 5</span>
+          <span class="chip" data-r="-1,1">−1 ~ 1</span>
+          <span class="chip" data-r="0,10">0 ~ 10</span>
+          <span class="chip" data-r="0.1,10">0.1 ~ 10（指数友好）</span>
+          <span class="chip" data-r="-10,10">−10 ~ 10</span>
+        </div>
+      </div>
+      <div class="hint" style="margin-bottom:10px">将把所有参数的拖动范围统一设为该区间；当前值超出新范围的会被裁剪到边界。</div>
+      <div id="rangePreview" class="mini" style="line-height:1.9"></div>
+    </div>
+    <div class="foot">
+      <button class="hbtn" id="rangeCancel">取消</button>
+      <button class="hbtn primary" id="rangeApply">应用到全部参数</button>
     </div>
   </div>
 </div>
@@ -506,14 +543,28 @@
   /* ============================================================
    *  2. 参数模型 + 三种映射模式
    * ============================================================ */
+  // 指数映射：同号 -> 几何插值；跨 0 -> 以 0 为界的分段几何插值（始终是非线性的指数变化）
+  const EXP_EPS = 1e-3;   // 逼近 0 时的收缩系数
+  function expMap(a, b, t){
+    t = clamp(t, 0, 1);
+    if (a === b) return a;
+    if ((a > 0 && b > 0) || (a < 0 && b < 0)) return a * Math.pow(b / a, t);
+    if (a === 0 || b === 0) return a + t * (b - a);
+    // 跨 0：0 在归一化轴上的位置
+    const A = Math.abs(a), B = Math.abs(b);
+    const ts = A / (A + B);
+    if (t <= ts){
+      const s = ts < 1e-9 ? 1 : t / ts;
+      return Math.sign(a) * A * Math.pow(EXP_EPS, s);
+    }
+    const s = (t - ts) / (1 - ts);
+    return Math.sign(b) * B * Math.pow(EXP_EPS, 1 - s);
+  }
   // 滑块位置 t∈[0,1] -> 参数值
   function tToValue(p, t){
     t = clamp(t, 0, 1);
     const a = p.min, b = p.max;
-    if (p.mode === 'exp'){
-      if ((a > 0 && b > 0) || (a < 0 && b < 0)) return a * Math.pow(b/a, t);
-      return a + t*(b-a);
-    }
+    if (p.mode === 'exp') return expMap(a, b, t);
     if (p.mode === 'custom'){
       const v = evalCustom(p.customExpr || 't', t);
       if (isFinite(v)) return v;
@@ -521,25 +572,19 @@
     }
     return a + t*(b-a);
   }
-  // 参数值 -> 滑块位置 t（近似反解）
+  // 参数值 -> 滑块位置 t（线性用解析解；指数/指定函数用采样反解）
   function valueToT(p, v){
     const a = p.min, b = p.max;
-    if (p.mode === 'exp' && ((a>0&&b>0)||(a<0&&b<0)) && v!==0 && (v>0)===(a>0)){
-      const t = Math.log(v/a) / Math.log(b/a);
-      if (isFinite(t)) return clamp(t, 0, 1);
+    if (p.mode === 'linear'){
+      if (b === a) return 0.5;
+      return clamp((v-a)/(b-a), 0, 1);
     }
-    if (p.mode === 'custom'){
-      // 采样搜索最接近的 t
-      let best = 0.5, bestErr = Infinity;
-      for (let i=0;i<=400;i++){
-        const tt = i/400, val = tToValue(p, tt);
-        const err = Math.abs(val - v);
-        if (err < bestErr && isFinite(err)){ bestErr = err; best = tt; }
-      }
-      return best;
+    let best = 0.5, bestErr = Infinity;
+    for (let i=0;i<=1000;i++){
+      const tt = i/1000, err = Math.abs(tToValue(p, tt) - v);
+      if (err < bestErr){ bestErr = err; best = tt; }
     }
-    if (b === a) return 0.5;
-    return clamp((v-a)/(b-a), 0, 1);
+    return best;
   }
 
   const state = {
@@ -939,7 +984,7 @@
       }
       let hint = '';
       if (p.mode === 'linear') hint = '<div class="pmode-hint">线性：<b>值 = min + t·(max−min)</b>，t 为滑块位置</div>';
-      else if (p.mode === 'exp') hint = '<div class="pmode-hint">指数：<b>值 = min·(max/min)<sup>t</sup></b>' + (sameSign ? '' : '（区间跨 0，已退化为线性）') + '</div>';
+      else if (p.mode === 'exp') hint = '<div class="pmode-hint">指数：<b>值 = min·(max/min)<sup>t</sup></b>' + (sameSign ? '' : '（跨 0：以 0 为界分段几何插值）') + '</div>';
       else hint = '<div class="pmode-hint">指定函数：<b>值 = f(t)</b>，t∈[0,1] 为滑块位置，可自由定义映射关系</div>';
 
       card.innerHTML =
@@ -1274,6 +1319,57 @@
     toast(aiCfg.key ? 'AI 已配置' : '已保存（未填 Key，使用离线问答）', 'ok');
   });
   $('#setModal').addEventListener('click', e => { if (e.target.id === 'setModal') $('#setModal').classList.remove('show'); });
+
+  // ---- 一键设置所有参数上下限 ----
+  function renderRangePreview(){
+    const lo = parseFloat($('#rangeMin').value), hi = parseFloat($('#rangeMax').value);
+    const names = Object.keys(state.params);
+    if (!names.length){ $('#rangePreview').textContent = '（当前没有参数）'; return; }
+    const ok = isFinite(lo) && isFinite(hi) && hi > lo;
+    $('#rangePreview').innerHTML = names.map(n => {
+      const p = state.params[n];
+      const v = ok ? clamp(p.value, lo, hi) : p.value;
+      return '<div><b style="color:#58a6ff">' + n + '</b> ' + fmt(p.min,4) + ' ~ ' + fmt(p.max,4) +
+        ' <span style="color:#6e7681">→</span> ' +
+        (ok ? (fmt(lo,4) + ' ~ ' + fmt(hi,4)) : '<span style="color:#f85149">区间无效</span>') +
+        ' <span style="color:#6e7681">（当前值 ' + fmt(v,4) + '）</span></div>';
+    }).join('');
+  }
+  function openRangeModal(){
+    if (!Object.keys(state.params).length){ toast('当前没有参数，请先输入含参函数'); return; }
+    const ps = Object.keys(state.params).map(n => state.params[n]);
+    const lo = Math.min.apply(null, ps.map(p => p.min));
+    const hi = Math.max.apply(null, ps.map(p => p.max));
+    $('#rangeMin').value = fmt(lo, 6);
+    $('#rangeMax').value = fmt(hi, 6);
+    renderRangePreview();
+    $('#rangeModal').classList.add('show');
+  }
+  $('#batchRange').addEventListener('click', openRangeModal);
+  $('#rangeCancel').addEventListener('click', () => $('#rangeModal').classList.remove('show'));
+  $('#rangeMin').addEventListener('input', renderRangePreview);
+  $('#rangeMax').addEventListener('input', renderRangePreview);
+  $$('#rangeModal .chip').forEach(c => c.addEventListener('click', () => {
+    const parts = c.dataset.r.split(',');
+    $('#rangeMin').value = parts[0]; $('#rangeMax').value = parts[1];
+    renderRangePreview();
+  }));
+  $('#rangeApply').addEventListener('click', () => {
+    const lo = parseFloat($('#rangeMin').value), hi = parseFloat($('#rangeMax').value);
+    if (!isFinite(lo) || !isFinite(hi) || hi <= lo){ toast('区间无效：下限必须小于上限', 'err'); return; }
+    let n = 0;
+    Object.keys(state.params).forEach(name => {
+      const p = state.params[name];
+      p.min = lo; p.max = hi;
+      p.value = clamp(p.value, lo, hi);
+      p.t = valueToT(p, p.value);
+      n++;
+    });
+    $('#rangeModal').classList.remove('show');
+    renderParams(); draw();
+    toast('已把 ' + n + ' 个参数的范围设为 ' + fmt(lo,4) + ' ~ ' + fmt(hi,4), 'ok');
+  });
+  $('#rangeModal').addEventListener('click', e => { if (e.target.id === 'rangeModal') $('#rangeModal').classList.remove('show'); });
 
   window.addEventListener('resize', resize);
 
